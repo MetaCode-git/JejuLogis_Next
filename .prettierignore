@@ -1,0 +1,10 @@
+.next
+node_modules
+*.lock
+*.log
+.git
+.env*
+build
+dist
+legacy/
+public/

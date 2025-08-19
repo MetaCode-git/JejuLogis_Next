@@ -1,0 +1,55 @@
+import { CompanyConfig } from '@/types/company';
+
+export async function loadCompanyConfig(companyId: string = 'jejutaksong'): Promise<CompanyConfig> {
+  try {
+    const response = await fetch(`/company-configs/${companyId}.json`);
+    if (!response.ok) {
+      throw new Error(`Failed to load company config for ${companyId}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error loading company config:', error);
+    // 기본값 반환
+    return {
+      company: {
+        name: '제주탁송',
+        brandName: '제주탁송',
+        logo: '/assets/images/main.png',
+        favicon: '/favicon.ico',
+        phone: '1688-8653',
+        email: 'kjmhercules@gmail.com',
+        address: '제주특별자치도 서귀포시 신서로98번길 14, 303호',
+        businessHours: '평일 10:00 - 20:00 (일, 공휴일 휴무)',
+        businessNumber: '388-10-01698',
+        ownerName: '권해철',
+        bankInfo: {
+          bankName: '카카오뱅크',
+          accountNumber: '7979-36-22639',
+          accountHolder: '제주탁송'
+        }
+      },
+      designatedDriver: {
+        name: '번개 대리운전',
+        corporationName: '번개 대리운전',
+        phone: '1688-8653'
+      },
+      services: {
+        vehicleTransport: true,
+        designatedDriver: true,
+        insurance: true,
+        consignment: true
+      },
+      theme: {
+        primaryColor: '#ef4444',
+        secondaryColor: '#374151',
+        fontFamily: 'SpoqaHanSans'
+      },
+      apiEndpoints: {
+        baseUrl: 'https://api.jejutaksong.com',
+        carListEndpoint: 'car_list/',
+        estimateEndpoint: 'estimate/',
+        findCarEndpoint: 'find_car/'
+      }
+    };
+  }
+}

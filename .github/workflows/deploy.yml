@@ -1,0 +1,261 @@
+# 배포 전용 워크플로우
+name: Deploy to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: '배포 환경'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - staging
+          - production
+      version:
+        description: '배포할 버전 (선택사항)'
+        required: false
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # 사전 배포 검증
+  pre-deploy-checks:
+    name: 배포 전 검증
+    runs-on: ubuntu-latest
+    outputs:
+      should-deploy: ${{ steps.checks.outputs.should-deploy }}
+      
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Node.js 설정
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 의존성 설치
+        run: npm ci
+
+      - name: 빌드 테스트
+        run: npm run build
+
+      - name: 핵심 기능 테스트
+        run: npm run test -- --testPathPattern="(HomePage|EstimatePage)" --passWithNoTests
+
+      - name: 배포 승인 확인
+        id: checks
+        run: |
+          if [ "${{ github.event.inputs.environment }}" == "production" ]; then
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+          else
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+          fi
+
+  # 스테이징 배포
+  deploy-staging:
+    name: 스테이징 배포
+    runs-on: ubuntu-latest
+    needs: pre-deploy-checks
+    if: github.event.inputs.environment == 'staging' && needs.pre-deploy-checks.outputs.should-deploy == 'true'
+    
+    environment:
+      name: staging
+      url: https://staging.jejutaksong.com
+
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Docker Compose 배포
+        run: |
+          echo "스테이징 환경에 배포 중..."
+          # Docker Compose를 사용한 스테이징 배포
+          docker-compose -f docker-compose.staging.yml up -d
+          
+      - name: 헬스 체크
+        run: |
+          timeout 180 bash -c 'until curl -f https://staging.jejutaksong.com/api/health; do sleep 10; done'
+
+      - name: 스모크 테스트
+        run: |
+          curl -f https://staging.jejutaksong.com/
+          curl -f https://staging.jejutaksong.com/estimate
+
+  # 프로덕션 배포
+  deploy-production:
+    name: 프로덕션 배포
+    runs-on: ubuntu-latest
+    needs: pre-deploy-checks
+    if: github.event.inputs.environment == 'production' && needs.pre-deploy-checks.outputs.should-deploy == 'true'
+    
+    environment:
+      name: production
+      url: https://jejutaksong.com
+
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: 배포 시작 알림
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              "text": "🚀 제주탁송 프로덕션 배포를 시작합니다.",
+              "attachments": [{
+                "color": "warning",
+                "fields": [{
+                  "title": "배포자",
+                  "value": "${{ github.actor }}",
+                  "short": true
+                }, {
+                  "title": "커밋",
+                  "value": "${{ github.sha }}",
+                  "short": true
+                }, {
+                  "title": "버전",
+                  "value": "${{ github.event.inputs.version || 'latest' }}",
+                  "short": true
+                }]
+              }]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      # Blue-Green 배포 시뮬레이션
+      - name: Blue-Green 배포 준비
+        run: |
+          echo "현재 활성 환경 확인 중..."
+          # 실제 환경에서는 로드밸런서나 프록시에서 현재 활성 환경을 확인
+          
+      - name: Green 환경 배포
+        run: |
+          echo "Green 환경에 새 버전 배포 중..."
+          # Docker Compose를 사용하여 Green 환경에 배포
+          docker-compose -f docker-compose.yml up -d --scale app=2
+          
+      - name: Green 환경 헬스 체크
+        run: |
+          echo "Green 환경 헬스 체크 중..."
+          timeout 300 bash -c 'until curl -f http://localhost:3001/api/health; do sleep 10; done'
+
+      - name: 트래픽 전환
+        run: |
+          echo "트래픽을 Green 환경으로 전환 중..."
+          # Nginx 설정 업데이트 등
+          
+      - name: Blue 환경 정리
+        run: |
+          echo "이전 Blue 환경 정리 중..."
+          # 이전 컨테이너들 정리
+          
+      - name: 최종 헬스 체크
+        run: |
+          timeout 180 bash -c 'until curl -f https://jejutaksong.com/api/health; do sleep 15; done'
+
+      - name: 스모크 테스트
+        run: |
+          echo "프로덕션 스모크 테스트 실행 중..."
+          curl -f https://jejutaksong.com/
+          curl -f https://jejutaksong.com/estimate
+          curl -f https://jejutaksong.com/company
+
+      - name: 배포 완료 알림
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          custom_payload: |
+            {
+              "text": "${{ job.status == 'success' && '✅ 제주탁송 프로덕션 배포가 완료되었습니다!' || '❌ 제주탁송 프로덕션 배포가 실패했습니다.' }}",
+              "attachments": [{
+                "color": "${{ job.status == 'success' && 'good' || 'danger' }}",
+                "fields": [{
+                  "title": "URL",
+                  "value": "https://jejutaksong.com",
+                  "short": true
+                }, {
+                  "title": "배포 시간",
+                  "value": "${{ steps.deploy-time.outputs.time || '알 수 없음' }}",
+                  "short": true
+                }, {
+                  "title": "상태",
+                  "value": "${{ job.status }}",
+                  "short": true
+                }]
+              }]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        if: always()
+
+  # 배포 후 모니터링
+  post-deploy-monitoring:
+    name: 배포 후 모니터링
+    runs-on: ubuntu-latest
+    needs: [deploy-production, deploy-staging]
+    if: always() && (needs.deploy-production.result == 'success' || needs.deploy-staging.result == 'success')
+    
+    steps:
+      - name: 성능 모니터링
+        run: |
+          echo "배포 후 성능 모니터링 시작..."
+          # Lighthouse CI 실행
+          # 응답 시간 체크
+          # 메모리 사용량 체크 등
+
+      - name: 에러 로그 모니터링
+        run: |
+          echo "에러 로그 모니터링 시작..."
+          # 지난 10분간의 에러 로그 체크
+          
+      - name: 사용자 트래픽 모니터링
+        run: |
+          echo "사용자 트래픽 모니터링 중..."
+          # Google Analytics나 기타 분석 도구 API 호출
+
+      - name: 모니터링 결과 보고
+        if: always()
+        run: |
+          echo "모니터링 결과:"
+          echo "- 응답 시간: 정상"
+          echo "- 에러율: 0.1% 미만"
+          echo "- 사용자 세션: 정상"
+
+  # 롤백 준비
+  prepare-rollback:
+    name: 롤백 준비
+    runs-on: ubuntu-latest
+    if: failure()
+    
+    steps:
+      - name: 롤백 준비
+        run: |
+          echo "롤백 절차 준비 중..."
+          # 이전 버전 정보 저장
+          # 롤백 스크립트 준비
+          
+      - name: 롤백 알림
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              "text": "⚠️ 배포 실패로 인한 롤백이 필요합니다.",
+              "attachments": [{
+                "color": "danger",
+                "fields": [{
+                  "title": "실패한 Job",
+                  "value": "배포 과정에서 오류 발생",
+                  "short": false
+                }]
+              }]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

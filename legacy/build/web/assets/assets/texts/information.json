@@ -1,0 +1,29 @@
+{
+  "company":{
+    "name": "제주탁송",
+    "reservation_name": "번개대리",
+    "phone": "1688-8653",
+    "time": "평일 10:00 - 20:00 (일, 공휴일 휴무)",
+    "reg_number": "388-10-01698",
+    "owner_name": "권해철",
+    "comm_auth_id": "",
+    "address": "제주특별자치도 서귀포시 신서로98번길 14, 303호",
+    "email": "kjmhercules@gmail.com",
+    "fax": "050-4040-5155",
+    "bank_name": "카카오뱅크",
+    "bank_number": "7979-36-22639",
+    "bank_owner": "제주탁송"
+  },
+
+  "designated_driver":{
+    "name": "번개 대리운전",
+    "corporation_name": "번개 대리운전",
+    "phone": "1688-8653"
+  },
+
+  "admin":{
+    "key": "JEJULOGIS",
+    "password": "wpwn0011@",
+    "phone": "010-2325-0866"
+  }
+}

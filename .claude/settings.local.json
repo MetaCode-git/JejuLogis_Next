@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(osascript:*)",
+      "Bash(npx create-next-app:*)",
+      "Bash(cp:*)",
+      "Bash(true)",
+      "Bash(rm:*)",
+      "Bash(npm install:*)",
+      "Bash(npx:*)",
+      "Bash(mkdir:*)",
+      "Bash(npm run dev:*)",
+      "Bash(lsof:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(grep:*)"
+    ],
+    "deny": []
+  }
+}
