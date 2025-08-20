@@ -45,10 +45,10 @@ export async function loadCompanyConfig(companyId: string = 'jejutaksong'): Prom
         fontFamily: 'SpoqaHanSans'
       },
       apiEndpoints: {
-        baseUrl: 'https://api.jejutaksong.com',
-        carListEndpoint: 'car_list/',
-        estimateEndpoint: 'estimate/',
-        findCarEndpoint: 'find_car/'
+        baseUrl: 'https://jejulogis.kro.kr/api/v0',
+        carListEndpoint: 'car-list/total',
+        estimateEndpoint: 'estimates/calculate',
+        findCarEndpoint: 'car-list/search'
       }
     };
   }

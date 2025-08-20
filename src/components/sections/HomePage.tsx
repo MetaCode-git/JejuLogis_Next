@@ -7,7 +7,7 @@ import { Carousel } from '@/components/ui/carousel';
 import { ResponsiveContainer } from '@/components/common/ResponsiveContainer';
 import { useCompany } from '@/contexts/CompanyContext';
 import { PageLoading } from '@/components/common/LoadingSpinner';
-import { EstimateModal } from '@/components/ui/estimate-modal';
+import { EstimateBottomSheet } from '@/components/estimate/EstimateBottomSheet';
 import Image from 'next/image';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -15,7 +15,7 @@ import { Calculator, Phone, Building, Shield } from 'lucide-react';
 
 export function HomePage() {
   const { config, loading, error } = useCompany();
-  const [isEstimateModalOpen, setIsEstimateModalOpen] = useState(false);
+  const [isEstimateBottomSheetOpen, setIsEstimateBottomSheetOpen] = useState(false);
 
   if (loading) {
     return <PageLoading message="페이지를 불러오는 중..." />;
@@ -77,7 +77,7 @@ export function HomePage() {
                 icon={Calculator}
                 iconPosition="left"
                 className="text-white shadow-lg"
-                onClick={() => setIsEstimateModalOpen(true)}
+                onClick={() => setIsEstimateBottomSheetOpen(true)}
               >
                 견적조회
               </EnhancedButton>
@@ -208,10 +208,10 @@ export function HomePage() {
         </ResponsiveContainer>
       </section>
 
-      {/* Estimate Modal */}
-      <EstimateModal 
-        open={isEstimateModalOpen}
-        onOpenChange={setIsEstimateModalOpen}
+      {/* Estimate Bottom Sheet */}
+      <EstimateBottomSheet 
+        isOpen={isEstimateBottomSheetOpen}
+        onClose={() => setIsEstimateBottomSheetOpen(false)}
       />
     </div>
   );
