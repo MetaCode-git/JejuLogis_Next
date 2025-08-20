@@ -52,13 +52,40 @@ lib/
 - `/admin` - 관리자 페이지
 - `/login` - 로그인
 
-### API 엔드포인트
-- `car_list/` - 차량 목록 조회
-- `find_car/` - 차량 검색
-- `estimate/` - 견적 계산
-- `estimate/list` - 견적 목록
-- `estimate/filter` - 필터링된 견적 목록
-- `getRestDeInfo` - 공휴일 정보
+### API 엔드포인트 (실제 서버 API)
+
+#### 차량 관련 API
+- `GET /car-list/total` - 전체 차량 목록 확인
+  - 국산차/수입차 카테고리별 제조사와 모델 정보 반환
+- `GET /car-list/search?text={검색어}` - 차량 검색
+  - 검색어에 맞는 차량 모델 목록 반환
+
+#### 견적 관련 API
+- `GET /estimates/calculate?dep={출발지}&arr={도착지}&name={차량명}&date={날짜}` - 견적 계산
+  - 출발지, 도착지, 차량명, 운송날짜 기반 견적 계산
+- `POST /estimates/save` - 견적 저장
+  - 계산된 견적 정보를 서버에 저장
+- `GET /estimates` - 견적 목록 확인 & 수정 결과 확인
+  - 저장된 견적 목록 조회 및 수정된 견적 결과 확인
+- `POST /estimates/filtered` - 필터링된 견적 조회
+  - 조건별 견적 목록 필터링 (회사별, 상태별, 날짜별 등)
+- `PATCH /estimates` - 견적 수정
+  - 기존 견적 정보 업데이트
+
+#### API 구현 상태
+- ✅ API 엔드포인트 상수 정의 (`src/lib/api.ts`)
+- ✅ 제주탁송 API 서비스 클래스 (`src/lib/jejulogis-api.ts`)
+- ✅ React Query 훅 구현 (`src/hooks/useEstimateAPI.ts`)
+- ✅ API 타입 정의 (`src/types/api.ts`)
+- ✅ 테스트 목업 서버 (`src/__tests__/mocks/server.ts`)
+
+#### 제거된 기존 API
+- ❌ `find_car/` (차량 검색) → `car-list/search`로 대체
+- ❌ `estimate/` → `estimates/calculate`로 대체  
+- ❌ `estimate/list` → `estimates`로 대체
+- ❌ `estimate/filter` → `estimates/filtered`로 대체
+- ❌ `getRestDeInfo` (공휴일 정보) - 서버 API 목록에 없음
+- ❌ 주소 검색 API - 서버 API 목록에 없음 (클라이언트에서 별도 처리)
 
 ### 리소스 파일
 - **이미지**: `assets/images/` - 배너, 아이콘, 일러스트레이션

@@ -1,5 +1,13 @@
 // API 기본 설정
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
+
+// 서버 시작시 API 설정 로그
+console.log('🔧 API Configuration:');
+console.log('  - NEXT_PUBLIC_API_BASE_URL:', process.env.NEXT_PUBLIC_API_BASE_URL);
+console.log('  - Final API_BASE_URL:', API_BASE_URL);
+console.log('  - Environment:', process.env.NODE_ENV);
+console.log('  - Is production:', process.env.NODE_ENV === 'production');
+console.log('='.repeat(50));
 
 // API 에러 타입
 export class ApiError extends Error {
@@ -49,7 +57,14 @@ class ApiClient {
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     try {
-      const response = await fetch(`${this.baseURL}${endpoint}`, {
+      const fullUrl = `${this.baseURL}${endpoint}`;
+      console.log('🚀 API Request:', {
+        baseURL: this.baseURL,
+        endpoint: endpoint,
+        fullUrl: fullUrl
+      });
+      
+      const response = await fetch(fullUrl, {
         ...fetchConfig,
         headers: {
           ...defaultHeaders,
@@ -163,26 +178,15 @@ class ApiClient {
 // 기본 API 클라이언트 인스턴스
 export const api = new ApiClient();
 
-// API 엔드포인트 상수들
+// API 엔드포인트 상수들 - 실제 서버 API에 맞춰 수정
 export const API_ENDPOINTS = {
-  // 견적 관련
-  estimates: '/estimates',
-  estimateById: (id: string) => `/estimates/${id}`,
-  submitEstimate: '/estimates/submit',
-  
   // 차량 관련
-  vehicles: '/vehicles',
-  vehicleCategories: '/vehicles/categories',
+  carListTotal: '/car-list/total',  // 차량 목록 확인
+  carListSearch: (text: string) => `/car-list/search?text=${encodeURIComponent(text)}`,  // 차량 검색
   
-  // 고객 관련
-  customers: '/customers',
-  
-  // 회사 설정
-  companyConfig: '/config/company',
-  
-  // 주소 검색
-  addressSearch: '/address/search',
-  
-  // 파일 업로드
-  upload: '/upload',
+  // 견적 관련
+  estimates: '/estimates',  // 견적 목록 확인 & 수정 결과 확인
+  estimatesCalculate: (dep: string, arr: string, name: string, date: string) => `/estimates/calculate?dep=${encodeURIComponent(dep)}&arr=${encodeURIComponent(arr)}&name=${encodeURIComponent(name)}&date=${date}`,  // 견적 계산
+  estimatesSave: '/estimates/save',  // 견적 저장
+  estimatesFiltered: '/estimates/filtered',  // 필터링된 견적 조회
 } as const;

@@ -12,7 +12,7 @@ import { SearchBox } from '@/components/ui/search-box';
 import { StepProgress } from '@/components/ui/step-progress';
 import { ResponsiveContainer } from '@/components/common/ResponsiveContainer';
 import { useEstimateStore } from '@/stores/useEstimateStore';
-import { useSubmitEstimate, useAddressSearch } from '@/hooks/useEstimateAPI';
+import { useSaveEstimate } from '@/hooks/useEstimateAPI';
 import { 
   estimateSchema, 
   vehicleInfoSchema, 
@@ -56,7 +56,7 @@ export function EnhancedEstimateForm() {
     getTotalSteps
   } = useEstimateStore();
 
-  const submitEstimateMutation = useSubmitEstimate();
+  const saveEstimateMutation = useSaveEstimate();
 
   // 전체 폼 관리
   const form = useForm<EstimateForm>({
@@ -108,7 +108,8 @@ export function EnhancedEstimateForm() {
 
   // 주소 검색 상태
   const [addressSearchQuery, setAddressSearchQuery] = React.useState('');
-  const { data: addressResults } = useAddressSearch(addressSearchQuery);
+  // 주소 검색 기능 임시 제거 (서버 API에 없음)
+  const addressResults: any[] = [];
 
   // 현재 단계의 진행 상태
   const currentSteps = steps.map((step, index) => ({
@@ -193,7 +194,7 @@ export function EnhancedEstimateForm() {
         specialRequests: customerInfo.specialRequests || undefined,
       };
 
-      const result = await submitEstimateMutation.mutateAsync(submitData);
+      const result = await saveEstimateMutation.mutateAsync(submitData);
       
       // 성공 시 결과 페이지로 이동
       window.location.href = `/estimate/result?id=${result.id}`;
@@ -510,7 +511,7 @@ export function EnhancedEstimateForm() {
                     </EnhancedButton>
                   ) : (
                     <EnhancedButton
-                      loading={submitEstimateMutation.isPending}
+                      loading={saveEstimateMutation.isPending}
                       loadingText="신청중..."
                       onClick={handleSubmit}
                       gradient
