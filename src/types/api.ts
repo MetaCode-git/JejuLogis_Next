@@ -122,6 +122,11 @@ export interface ApiError {
   details?: any;
 }
 
+// 간단한 견적 응답 타입 (실제 서버 응답)
+export interface SimpleEstimateResponse {
+  cost: number;
+}
+
 // 견적 목록 응답 타입
 export type EstimateListResponse = EstimateResponse[];
 

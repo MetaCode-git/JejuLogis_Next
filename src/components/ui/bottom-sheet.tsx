@@ -59,7 +59,7 @@ export function BottomSheet({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/50 z-50 flex items-end"
+            className="fixed inset-0 bg-black/50 z-50 flex items-end justify-center"
             onClick={handleBackdropClick}
           >
             {/* 바텀시트 */}
@@ -75,12 +75,13 @@ export function BottomSheet({
               }}
               className={`
                 w-full bg-white rounded-t-2xl shadow-2xl
+                md:w-auto md:min-w-[500px] md:max-w-[600px]
                 ${className}
               `}
               style={{ maxHeight }}
             >
-              {/* 드래그 핸들 */}
-              <div className="flex justify-center py-3">
+              {/* 드래그 핸들 (모바일만) */}
+              <div className="flex justify-center py-3 md:hidden">
                 <div className="w-10 h-1 bg-gray-300 rounded-full"></div>
               </div>
 

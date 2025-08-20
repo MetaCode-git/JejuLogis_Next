@@ -1,5 +1,5 @@
 import { api, API_ENDPOINTS } from './api';
-import type { Vehicle, VehicleSearchResponse, EstimateRequest, EstimateResponse, AddressSearchResult } from '@/types/api';
+import type { Vehicle, VehicleSearchResponse, EstimateRequest, EstimateResponse, SimpleEstimateResponse, AddressSearchResult } from '@/types/api';
 
 // 제주탁송 실제 API 서비스 - 정확한 엔드포인트
 export class JejuLogisApiService {
@@ -69,7 +69,7 @@ export class JejuLogisApiService {
    * @param estimateData 견적 요청 데이터
    * @param vehicleName 선택된 차량명 (예: "소나타", "G70")
    */
-  async calculateEstimate(estimateData: EstimateRequest, vehicleName: string): Promise<EstimateResponse> {
+  async calculateEstimate(estimateData: EstimateRequest, vehicleName: string): Promise<SimpleEstimateResponse> {
     try {
       const date = estimateData.transport_date || new Date().toISOString().split('T')[0];
       const endpoint = API_ENDPOINTS.estimatesCalculate(
@@ -79,8 +79,17 @@ export class JejuLogisApiService {
         date
       );
 
-      const response = await api.get<EstimateResponse>(endpoint);
-      return response.data;
+      const response = await api.get<SimpleEstimateResponse>(endpoint);
+      console.log('🔍 견적 계산 API 응답:', {
+        endpoint,
+        response: response,
+        data: response.data,
+        cost: response.data?.cost || response.cost
+      });
+
+      // 서버가 직접 {cost: number} 형태로 응답하는 경우와 {data: {cost: number}} 형태 모두 처리
+      const cost = response.data?.cost || response.cost;
+      return { cost: cost || 0 };
     } catch (error) {
       console.error('견적 계산 실패:', error);
       throw error;

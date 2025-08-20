@@ -5,8 +5,9 @@ import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, MapPin, Car, Calculator, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { jejuLogisApi } from '@/lib/jejulogis-api';
-import type { Vehicle, EstimateRequest, EstimateResponse, getVehicleManufacturer, getVehicleModel } from '@/types/api';
+import type { Vehicle, EstimateRequest, SimpleEstimateResponse } from '@/types/api';
 
 interface EstimateBottomSheetProps {
   isOpen: boolean;
@@ -14,6 +15,8 @@ interface EstimateBottomSheetProps {
 }
 
 export function EstimateBottomSheet({ isOpen, onClose }: EstimateBottomSheetProps) {
+  const router = useRouter();
+  
   // 폼 상태
   const [vehicleQuery, setVehicleQuery] = useState('');
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
@@ -28,10 +31,20 @@ export function EstimateBottomSheet({ isOpen, onClose }: EstimateBottomSheetProp
   const [isCalculating, setIsCalculating] = useState(false);
 
   // 견적 결과
-  const [estimateResult, setEstimateResult] = useState<EstimateResponse | null>(null);
+  const [estimateResult, setEstimateResult] = useState<SimpleEstimateResponse | null>(null);
 
   // Debounce refs
   const vehicleTimeoutRef = useRef<NodeJS.Timeout>();
+
+  // 견적 결과 변화 감지
+  useEffect(() => {
+    console.log('🎯 estimateResult 상태 변화:', {
+      estimateResult,
+      hasResult: !!estimateResult,
+      cost: estimateResult?.cost,
+      costType: typeof estimateResult?.cost
+    });
+  }, [estimateResult]);
 
   // 차량 검색 debounce
   useEffect(() => {
@@ -95,6 +108,10 @@ export function EstimateBottomSheet({ isOpen, onClose }: EstimateBottomSheetProp
       };
 
       const result = await jejuLogisApi.calculateEstimate(estimateData, selectedVehicle.name);
+      console.log('💰 견적 계산 결과:', result);
+      console.log('💰 결과 타입:', typeof result);
+      console.log('💰 cost 값:', result.cost);
+      console.log('💰 cost 타입:', typeof result.cost);
       setEstimateResult(result);
     } catch (error) {
       console.error('견적 계산 에러:', error);
@@ -131,52 +148,83 @@ export function EstimateBottomSheet({ isOpen, onClose }: EstimateBottomSheetProp
       <div className="space-y-6 pt-4">
         {/* 견적 결과가 있으면 결과 표시 */}
         {estimateResult ? (
-          <div className="space-y-4">
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <h3 className="text-lg font-semibold text-blue-900 mb-2">견적 결과</h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">차종:</span>
-                  <span className="font-medium">{estimateResult.vehicle_info.maker} {estimateResult.vehicle_info.name}</span>
+          <div className="space-y-6">
+            {/* 성공 메시지 */}
+            <div className="text-center">
+              <div className="inline-flex items-center gap-2 text-green-600 font-medium mb-2">
+                <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                  ✅
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">출발지:</span>
-                  <span className="font-medium text-right max-w-[200px] truncate">{estimateResult.departure_info.address}</span>
+                견적 계산 완료
+              </div>
+            </div>
+
+            {/* 선택 정보 요약 */}
+            <div className="text-center space-y-2">
+              <div className="flex items-center justify-center gap-2 text-gray-700">
+                🚗 <span className="font-medium">{selectedVehicle?.maker} {selectedVehicle?.name}</span>
+              </div>
+              <div className="space-y-1 text-sm text-gray-600">
+                <div className="flex items-center justify-center gap-2">
+                  📍 <span className="font-medium text-green-600">출발지</span> <span>{departureAddress}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">도착지:</span>
-                  <span className="font-medium text-right max-w-[200px] truncate">{estimateResult.arrival_info.address}</span>
+                <div className="flex items-center justify-center gap-2">
+                  🏁 <span className="font-medium text-red-600">도착지</span> <span>{arrivalAddress}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">거리:</span>
-                  <span className="font-medium">{estimateResult.distance}km</span>
+              </div>
+            </div>
+
+            {/* 탁송 비용 강조 */}
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-6 text-white text-center">
+              <div className="text-lg font-medium mb-2">탁송 비용</div>
+              <div className="text-3xl font-bold">
+                ₩ {estimateResult?.cost ? estimateResult.cost.toLocaleString() : '0'}원
+              </div>
+              {/* 디버그 정보 */}
+              <div className="text-xs mt-2 opacity-75">
+                Debug: cost={estimateResult?.cost}, type={typeof estimateResult?.cost}
+              </div>
+            </div>
+
+            {/* 추가 정보 */}
+            <div className="bg-gray-50 rounded-lg p-4 text-center">
+              <div className="text-sm text-gray-600 space-y-1">
+                <div className="flex items-center justify-center gap-2">
+                  💡 <span>예상 배송: 1-2일</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">예상 소요시간:</span>
-                  <span className="font-medium">{estimateResult.estimated_duration}</span>
-                </div>
-                <hr className="my-2" />
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">기본 요금:</span>
-                  <span className="font-medium">{estimateResult.base_price.toLocaleString()}원</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">추가 요금:</span>
-                  <span className="font-medium">{estimateResult.additional_fees.toLocaleString()}원</span>
-                </div>
-                <div className="flex justify-between items-center text-lg font-bold text-blue-600">
-                  <span>총 견적금액:</span>
-                  <span>{estimateResult.total_price.toLocaleString()}원</span>
+                <div className="flex items-center justify-center gap-2">
+                  🛡️ <span>안전 보험 포함</span>
                 </div>
               </div>
             </div>
             
-            <div className="flex gap-2">
-              <Button onClick={resetForm} variant="outline" className="flex-1">
-                다시 조회
+            {/* 액션 버튼들 */}
+            <div className="space-y-3">
+              <Button 
+                className="w-full h-12 text-lg font-medium bg-blue-600 hover:bg-blue-700"
+                onClick={() => {
+                  // 탁송 신청 페이지로 이동
+                  const vehicleInfo = selectedVehicle ? `${selectedVehicle.maker} ${selectedVehicle.name}` : '';
+                  const params = new URLSearchParams({
+                    vehicle: vehicleInfo,
+                    departure: departureAddress,
+                    arrival: arrivalAddress,
+                    cost: estimateResult.cost.toString()
+                  });
+                  
+                  router.push(`/transport-apply?${params.toString()}`);
+                  onClose(); // BottomSheet 닫기
+                }}
+              >
+                탁송 신청하기
               </Button>
-              <Button onClick={handleClose} className="flex-1">
-                확인
+              
+              <Button 
+                onClick={resetForm} 
+                variant="outline" 
+                className="w-full"
+              >
+                다시 계산
               </Button>
             </div>
           </div>
@@ -248,6 +296,40 @@ export function EstimateBottomSheet({ isOpen, onClose }: EstimateBottomSheetProp
               <div>차량 선택: {selectedVehicle ? '✅ 완료' : '❌ 미선택'}</div>
               <div>출발지 입력: {departureAddress.trim() ? '✅ 완료' : '❌ 미입력'}</div>
               <div>도착지 입력: {arrivalAddress.trim() ? '✅ 완료' : '❌ 미입력'}</div>
+            </div>
+
+            {/* 테스트용 주소 입력 버튼 */}
+            <div className="pt-2">
+              <Button 
+                onClick={() => {
+                  // 테스트 차량 목록
+                  const testVehicles = ['그랜저', '아반테', '아이오닉'];
+                  const randomVehicle = testVehicles[Math.floor(Math.random() * testVehicles.length)];
+                  
+                  // 차량 검색 및 선택
+                  setVehicleQuery(randomVehicle);
+                  
+                  // 임시 차량 객체 생성 (실제 검색 결과와 유사한 형태)
+                  const mockVehicle: Vehicle = {
+                    id: Math.floor(Math.random() * 1000),
+                    type: '국산차',
+                    maker: '현대',
+                    name: randomVehicle,
+                    priceNormal: 150000,
+                    priceExtra: 180000
+                  };
+                  setSelectedVehicle(mockVehicle);
+                  
+                  // 주소 입력
+                  setDepartureAddress('경기도 용인시 기흥구 진산로 124');
+                  setArrivalAddress('제주특별자치도 서귀포시 가가로 14');
+                }}
+                variant="outline"
+                size="sm"
+                className="w-full text-xs py-1 h-8 text-gray-600"
+              >
+                🚗📍 차종+주소 입력 (테스트용)
+              </Button>
             </div>
 
             {/* 견적 계산 버튼 */}
