@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, MapPin, Car, Calculator, Loader2 } from 'lucide-react';
+import { MapPin, Car, Calculator, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { jejuLogisApi } from '@/lib/jejulogis-api';
 import type { Vehicle, EstimateRequest, SimpleEstimateResponse } from '@/types/api';
@@ -231,7 +231,7 @@ export function EstimateBottomSheet({ isOpen, onClose }: EstimateBottomSheetProp
         ) : (
           <div className="space-y-4">
             {/* 차종 선택 */}
-            <div className="space-y-2">
+            <div className="space-y-2 relative">
               <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
                 <Car className="w-4 h-4" />
                 차종
@@ -248,23 +248,35 @@ export function EstimateBottomSheet({ isOpen, onClose }: EstimateBottomSheetProp
                 )}
               </div>
               
-              {/* 차량 검색 결과 */}
+              {/* 차량 검색 결과 - Floating Dropdown */}
               {vehicleResults.length > 0 && (
-                <div className="border border-gray-200 rounded-md bg-white max-h-40 overflow-y-auto">
+                <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-y-auto" style={{ maxHeight: '250px' }}>
+                  <div className="p-2 text-xs text-gray-500 bg-gray-50 border-b">
+                    검색 결과 ({vehicleResults.length}개)
+                  </div>
                   {vehicleResults.map((vehicle) => (
                     <button
                       key={vehicle.id}
                       onClick={() => handleVehicleSelect(vehicle)}
-                      className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                      className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
                     >
-                      <div className="font-medium">{vehicle.maker} {vehicle.name}</div>
+                      <div className="font-medium text-gray-900">{vehicle.maker} {vehicle.name}</div>
                       <div className="text-sm text-gray-500">{vehicle.type} • 일반: {vehicle.priceNormal.toLocaleString()}원</div>
                     </button>
                   ))}
                 </div>
               )}
+              
+              {/* 검색 결과가 없을 때 */}
+              {vehicleQuery.trim() && !isSearchingVehicle && vehicleResults.length === 0 && !selectedVehicle && (
+                <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg">
+                  <div className="p-4 text-center text-gray-500 text-sm">
+                    &apos;{vehicleQuery}&apos;에 대한 검색 결과가 없습니다.
+                  </div>
+                </div>
+              )}
             </div>
-
+            
             {/* 출발지 입력 */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700 flex items-center gap-2">

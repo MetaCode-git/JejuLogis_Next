@@ -11,6 +11,7 @@ interface BottomSheetProps {
   title?: string;
   maxHeight?: string;
   className?: string;
+  fixedHeight?: boolean;
 }
 
 export function BottomSheet({ 
@@ -19,7 +20,8 @@ export function BottomSheet({
   children, 
   title, 
   maxHeight = "90vh",
-  className = ""
+  className = "",
+  fixedHeight = false
 }: BottomSheetProps) {
   const sheetRef = useRef<HTMLDivElement>(null);
 
@@ -74,11 +76,11 @@ export function BottomSheet({
                 damping: 40
               }}
               className={`
-                w-full bg-white rounded-t-2xl shadow-2xl
+                w-full bg-white rounded-t-2xl shadow-2xl flex flex-col
                 md:w-auto md:min-w-[500px] md:max-w-[600px]
                 ${className}
               `}
-              style={{ maxHeight }}
+              style={fixedHeight ? { height: maxHeight } : { maxHeight }}
             >
               {/* 드래그 핸들 (모바일만) */}
               <div className="flex justify-center py-3 md:hidden">
@@ -99,7 +101,14 @@ export function BottomSheet({
               )}
 
               {/* 컨텐츠 */}
-              <div className="px-4 pb-4 overflow-y-auto" style={{ maxHeight: `calc(${maxHeight} - 100px)` }}>
+              <div 
+                className="px-4 pb-4 overflow-y-auto flex-1" 
+                style={{ 
+                  maxHeight: fixedHeight 
+                    ? `calc(${maxHeight} - ${title ? '120px' : '80px'})` 
+                    : `calc(${maxHeight} - 100px)` 
+                }}
+              >
                 {children}
               </div>
             </motion.div>
