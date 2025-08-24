@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +9,174 @@ import { MapPin, Car, Calculator, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { jejuLogisApi } from '@/lib/jejulogis-api';
 import type { Vehicle, EstimateRequest, SimpleEstimateResponse } from '@/types/api';
+// 주소 검색 API 타입
+interface AddressResult {
+  address: string;
+  roadAddress: string;
+  jibunAddress: string;
+  zonecode: string;
+  buildingName?: string;
+}
+
+// Next.js API Route를 통한 실제 주소 검색 함수
+const searchKoreanAddress = async (query: string): Promise<AddressResult[]> => {
+  if (!query.trim()) return [];
+  
+  try {
+    const response = await fetch(`/api/address-search?query=${encodeURIComponent(query)}`);
+
+    if (!response.ok) {
+      throw new Error(`API 호출 실패: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    if (data.error) {
+      console.error('주소 검색 API 에러:', data.error);
+      return [];
+    }
+
+    return data.results || [];
+    
+  } catch (error) {
+    console.error('주소 검색 API 에러:', error);
+    return [];
+  }
+};
+
+// Portal을 사용한 Floating Dropdown 컴포넌트 (주소용)
+const FloatingAddressDropdown = ({ 
+  inputRef, 
+  results, 
+  isVisible, 
+  onSelect, 
+  searchQuery,
+  isSearching 
+}: {
+  inputRef: React.RefObject<HTMLDivElement | null>;
+  results: AddressResult[];
+  isVisible: boolean;
+  onSelect: (address: AddressResult) => void;
+  searchQuery: string;
+  isSearching: boolean;
+}) => {
+  const [position, setPosition] = useState({ top: 0, left: 0, width: 0 });
+
+  useEffect(() => {
+    if (inputRef.current && isVisible) {
+      const rect = inputRef.current.getBoundingClientRect();
+      setPosition({
+        top: rect.top - 10, // 입력 필드 위쪽에 10px 간격
+        left: rect.left,
+        width: rect.width
+      });
+    }
+  }, [inputRef, isVisible]);
+
+  if (!isVisible || typeof window === 'undefined') return null;
+
+  const dropdownContent = (
+    <div 
+      className="fixed z-50 bg-white border border-gray-200 rounded-lg shadow-lg overflow-y-auto"
+      style={{ 
+        top: `${position.top}px`,
+        left: `${position.left}px`,
+        width: `${position.width}px`,
+        maxHeight: '250px',
+        transform: 'translateY(-100%)'
+      }}
+    >
+      {results.length > 0 ? (
+        <>
+          <div className="p-2 text-xs text-gray-500 bg-gray-50 border-b">
+            검색 결과 ({results.length}개)
+          </div>
+          {results.map((address, index) => (
+            <button
+              key={index}
+              onClick={() => onSelect(address)}
+              className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
+            >
+              <div className="font-medium text-gray-900">
+                {address.roadAddress || address.jibunAddress}
+              </div>
+              {address.roadAddress && address.jibunAddress && address.roadAddress !== address.jibunAddress && (
+                <div className="text-sm text-gray-500">({address.jibunAddress})</div>
+              )}
+              {address.buildingName && address.buildingName.trim() && (
+                <div className="text-xs text-blue-600">{address.buildingName}</div>
+              )}
+              <div className="text-xs text-gray-400">우편번호: {address.zonecode}</div>
+            </button>
+          ))}
+        </>
+      ) : searchQuery.trim() && !isSearching ? (
+        <div className="p-4 text-center text-gray-500 text-sm">
+          &apos;{searchQuery}&apos;에 대한 검색 결과가 없습니다.
+        </div>
+      ) : null}
+    </div>
+  );
+
+  return createPortal(dropdownContent, document.body);
+};
+
+// Portal을 사용한 Floating Dropdown 컴포넌트 (차량용)
+const FloatingVehicleDropdown = ({ 
+  inputRef, 
+  results, 
+  isVisible, 
+  onSelect
+}: {
+  inputRef: React.RefObject<HTMLDivElement | null>;
+  results: Vehicle[];
+  isVisible: boolean;
+  onSelect: (vehicle: Vehicle) => void;
+}) => {
+  const [position, setPosition] = useState({ top: 0, left: 0, width: 0 });
+
+  useEffect(() => {
+    if (inputRef.current && isVisible) {
+      const rect = inputRef.current.getBoundingClientRect();
+      setPosition({
+        top: rect.top - 10, // 입력 필드 위쪽에 10px 간격
+        left: rect.left,
+        width: rect.width
+      });
+    }
+  }, [inputRef, isVisible]);
+
+  if (!isVisible || typeof window === 'undefined' || results.length === 0) return null;
+
+  const dropdownContent = (
+    <div 
+      className="fixed z-50 bg-white border border-gray-200 rounded-lg shadow-lg overflow-y-auto"
+      style={{ 
+        top: `${position.top}px`,
+        left: `${position.left}px`,
+        width: `${position.width}px`,
+        maxHeight: '250px',
+        transform: 'translateY(-100%)'
+      }}
+    >
+      <div className="p-2 text-xs text-gray-500 bg-gray-50 border-b">
+        검색 결과 ({results.length}개)
+      </div>
+      {results.map((vehicle) => (
+        <button
+          key={vehicle.id}
+          onClick={() => onSelect(vehicle)}
+          className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
+        >
+          <div className="font-medium text-gray-900">{vehicle.maker} {vehicle.name}</div>
+          <div className="text-sm text-gray-500">{vehicle.type} • 일반: {vehicle.priceNormal.toLocaleString()}원</div>
+        </button>
+      ))}
+    </div>
+  );
+
+  return createPortal(dropdownContent, document.body);
+};
 
 interface EstimateBottomSheetProps {
   isOpen: boolean;
@@ -33,8 +202,20 @@ export function EstimateBottomSheet({ isOpen, onClose }: EstimateBottomSheetProp
   // 견적 결과
   const [estimateResult, setEstimateResult] = useState<SimpleEstimateResponse | null>(null);
 
+  // 주소 검색 상태
+  const [addressSearchMode, setAddressSearchMode] = useState<'departure' | 'arrival' | null>(null);
+  const [addressSearchQuery, setAddressSearchQuery] = useState('');
+  const [addressResults, setAddressResults] = useState<AddressResult[]>([]);
+  const [isSearchingAddress, setIsSearchingAddress] = useState(false);
+
   // Debounce refs
   const vehicleTimeoutRef = useRef<NodeJS.Timeout>();
+  const addressTimeoutRef = useRef<NodeJS.Timeout>();
+  
+  // 입력 필드 ref들 (Portal 위치 계산용)
+  const vehicleInputRef = useRef<HTMLDivElement>(null);
+  const departureInputRef = useRef<HTMLDivElement>(null);
+  const arrivalInputRef = useRef<HTMLDivElement>(null);
 
   // 견적 결과 변화 감지
   useEffect(() => {
@@ -83,6 +264,57 @@ export function EstimateBottomSheet({ isOpen, onClose }: EstimateBottomSheetProp
     };
   }, [vehicleQuery, selectedVehicle]);
 
+  // 주소 검색 debounce
+  useEffect(() => {
+    if (addressTimeoutRef.current) {
+      clearTimeout(addressTimeoutRef.current);
+    }
+
+    if (addressSearchQuery.trim() && addressSearchMode) {
+      setIsSearchingAddress(true);
+      addressTimeoutRef.current = setTimeout(async () => {
+        try {
+          console.log('🏠 주소 검색 시작:', addressSearchQuery);
+          const results = await searchKoreanAddress(addressSearchQuery);
+          console.log('🏠 주소 검색 결과:', results);
+          setAddressResults(results);
+        } catch (error) {
+          console.error('주소 검색 에러:', error);
+          setAddressResults([]);
+        } finally {
+          setIsSearchingAddress(false);
+        }
+      }, 300);
+    } else if (!addressSearchQuery.trim()) {
+      setAddressResults([]);
+    }
+
+    return () => {
+      if (addressTimeoutRef.current) {
+        clearTimeout(addressTimeoutRef.current);
+      }
+    };
+  }, [addressSearchQuery, addressSearchMode]);
+
+  // ESC 키로 주소 검색 모드 종료
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && addressSearchMode) {
+        setAddressSearchMode(null);
+        setAddressSearchQuery('');
+        setAddressResults([]);
+      }
+    };
+
+    if (addressSearchMode) {
+      document.addEventListener('keydown', handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [addressSearchMode]);
+
   // 차량 선택
   const handleVehicleSelect = (vehicle: Vehicle) => {
     console.log('🚗 차량 선택:', vehicle);
@@ -90,6 +322,31 @@ export function EstimateBottomSheet({ isOpen, onClose }: EstimateBottomSheetProp
     setVehicleQuery(vehicle.name); // vehicle.name이 차량명
     setVehicleResults([]);
     console.log('🚗 차량 선택 완료, selectedVehicle 상태 업데이트됨');
+  };
+
+  // 주소 선택
+  const handleAddressSelect = (address: AddressResult) => {
+    console.log('🏠 주소 선택:', address);
+    const selectedAddress = address.roadAddress || address.jibunAddress;
+    
+    if (addressSearchMode === 'departure') {
+      setDepartureAddress(selectedAddress);
+    } else if (addressSearchMode === 'arrival') {
+      setArrivalAddress(selectedAddress);
+    }
+    
+    // 검색 모드 종료
+    setAddressSearchMode(null);
+    setAddressSearchQuery('');
+    setAddressResults([]);
+    console.log('🏠 주소 선택 완료');
+  };
+
+  // 주소 검색 시작
+  const handleAddressSearchStart = (mode: 'departure' | 'arrival') => {
+    setAddressSearchMode(mode);
+    setAddressSearchQuery('');
+    setAddressResults([]);
   };
 
   // 견적 계산
@@ -129,6 +386,10 @@ export function EstimateBottomSheet({ isOpen, onClose }: EstimateBottomSheetProp
     setArrivalAddress('');
     setVehicleResults([]);
     setEstimateResult(null);
+    // 주소 검색 상태 초기화
+    setAddressSearchMode(null);
+    setAddressSearchQuery('');
+    setAddressResults([]);
   };
 
   // 바텀시트 닫기
@@ -231,12 +492,12 @@ export function EstimateBottomSheet({ isOpen, onClose }: EstimateBottomSheetProp
         ) : (
           <div className="space-y-4">
             {/* 차종 선택 */}
-            <div className="space-y-2 relative">
+            <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
                 <Car className="w-4 h-4" />
                 차종
               </label>
-              <div className="relative">
+              <div className="relative" ref={vehicleInputRef}>
                 <Input
                   placeholder="차종을 입력하세요 (예: 소나타, 그랜저)"
                   value={vehicleQuery}
@@ -247,34 +508,6 @@ export function EstimateBottomSheet({ isOpen, onClose }: EstimateBottomSheetProp
                   <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 animate-spin text-gray-400" />
                 )}
               </div>
-              
-              {/* 차량 검색 결과 - Floating Dropdown */}
-              {vehicleResults.length > 0 && (
-                <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-y-auto" style={{ maxHeight: '250px' }}>
-                  <div className="p-2 text-xs text-gray-500 bg-gray-50 border-b">
-                    검색 결과 ({vehicleResults.length}개)
-                  </div>
-                  {vehicleResults.map((vehicle) => (
-                    <button
-                      key={vehicle.id}
-                      onClick={() => handleVehicleSelect(vehicle)}
-                      className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
-                    >
-                      <div className="font-medium text-gray-900">{vehicle.maker} {vehicle.name}</div>
-                      <div className="text-sm text-gray-500">{vehicle.type} • 일반: {vehicle.priceNormal.toLocaleString()}원</div>
-                    </button>
-                  ))}
-                </div>
-              )}
-              
-              {/* 검색 결과가 없을 때 */}
-              {vehicleQuery.trim() && !isSearchingVehicle && vehicleResults.length === 0 && !selectedVehicle && (
-                <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg">
-                  <div className="p-4 text-center text-gray-500 text-sm">
-                    &apos;{vehicleQuery}&apos;에 대한 검색 결과가 없습니다.
-                  </div>
-                </div>
-              )}
             </div>
             
             {/* 출발지 입력 */}
@@ -283,11 +516,32 @@ export function EstimateBottomSheet({ isOpen, onClose }: EstimateBottomSheetProp
                 <MapPin className="w-4 h-4 text-green-500" />
                 출발지
               </label>
-              <Input
-                placeholder="출발지를 입력하세요 (예: 서울특별시 강남구)"
-                value={departureAddress}
-                onChange={(e) => setDepartureAddress(e.target.value)}
-              />
+              {addressSearchMode === 'departure' ? (
+                <div className="relative" ref={departureInputRef}>
+                  <Input
+                    placeholder="출발지를 검색하세요..."
+                    value={addressSearchQuery}
+                    onChange={(e) => setAddressSearchQuery(e.target.value)}
+                    autoFocus
+                  />
+                  {isSearchingAddress && (
+                    <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 animate-spin text-gray-400" />
+                  )}
+                </div>
+              ) : (
+                <div
+                  ref={departureInputRef}
+                  onClick={() => handleAddressSearchStart('departure')}
+                  className="cursor-pointer"
+                >
+                  <Input
+                    placeholder="출발지를 검색하세요 🔍"
+                    value={departureAddress}
+                    readOnly
+                    className="cursor-pointer hover:border-green-500 transition-colors"
+                  />
+                </div>
+              )}
             </div>
 
             {/* 도착지 입력 */}
@@ -296,52 +550,32 @@ export function EstimateBottomSheet({ isOpen, onClose }: EstimateBottomSheetProp
                 <MapPin className="w-4 h-4 text-red-500" />
                 도착지
               </label>
-              <Input
-                placeholder="도착지를 입력하세요 (예: 제주특별자치도 제주시)"
-                value={arrivalAddress}
-                onChange={(e) => setArrivalAddress(e.target.value)}
-              />
-            </div>
-
-            {/* 선택 상태 디버그 정보 */}
-            <div className="pt-2 text-xs text-gray-500 space-y-1">
-              <div>차량 선택: {selectedVehicle ? '✅ 완료' : '❌ 미선택'}</div>
-              <div>출발지 입력: {departureAddress.trim() ? '✅ 완료' : '❌ 미입력'}</div>
-              <div>도착지 입력: {arrivalAddress.trim() ? '✅ 완료' : '❌ 미입력'}</div>
-            </div>
-
-            {/* 테스트용 주소 입력 버튼 */}
-            <div className="pt-2">
-              <Button 
-                onClick={() => {
-                  // 테스트 차량 목록
-                  const testVehicles = ['그랜저', '아반테', '아이오닉'];
-                  const randomVehicle = testVehicles[Math.floor(Math.random() * testVehicles.length)];
-                  
-                  // 차량 검색 및 선택
-                  setVehicleQuery(randomVehicle);
-                  
-                  // 임시 차량 객체 생성 (실제 검색 결과와 유사한 형태)
-                  const mockVehicle: Vehicle = {
-                    id: Math.floor(Math.random() * 1000),
-                    type: '국산차',
-                    maker: '현대',
-                    name: randomVehicle,
-                    priceNormal: 150000,
-                    priceExtra: 180000
-                  };
-                  setSelectedVehicle(mockVehicle);
-                  
-                  // 주소 입력
-                  setDepartureAddress('경기도 용인시 기흥구 진산로 124');
-                  setArrivalAddress('제주특별자치도 서귀포시 가가로 14');
-                }}
-                variant="outline"
-                size="sm"
-                className="w-full text-xs py-1 h-8 text-gray-600"
-              >
-                🚗📍 차종+주소 입력 (테스트용)
-              </Button>
+              {addressSearchMode === 'arrival' ? (
+                <div className="relative" ref={arrivalInputRef}>
+                  <Input
+                    placeholder="도착지를 검색하세요..."
+                    value={addressSearchQuery}
+                    onChange={(e) => setAddressSearchQuery(e.target.value)}
+                    autoFocus
+                  />
+                  {isSearchingAddress && (
+                    <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 animate-spin text-gray-400" />
+                  )}
+                </div>
+              ) : (
+                <div
+                  ref={arrivalInputRef}
+                  onClick={() => handleAddressSearchStart('arrival')}
+                  className="cursor-pointer"
+                >
+                  <Input
+                    placeholder="도착지를 검색하세요 🔍"
+                    value={arrivalAddress}
+                    readOnly
+                    className="cursor-pointer hover:border-red-500 transition-colors"
+                  />
+                </div>
+              )}
             </div>
 
             {/* 견적 계산 버튼 */}
@@ -376,6 +610,24 @@ export function EstimateBottomSheet({ isOpen, onClose }: EstimateBottomSheetProp
           </div>
         )}
       </div>
+
+      {/* Portal로 렌더링되는 차량 검색 Dropdown */}
+      <FloatingVehicleDropdown
+        inputRef={vehicleInputRef}
+        results={vehicleResults}
+        isVisible={vehicleResults.length > 0}
+        onSelect={handleVehicleSelect}
+      />
+
+      {/* Portal로 렌더링되는 주소 검색 Dropdown */}
+      <FloatingAddressDropdown
+        inputRef={addressSearchMode === 'departure' ? departureInputRef : arrivalInputRef}
+        results={addressResults}
+        isVisible={!!addressSearchMode && (addressResults.length > 0 || (!!addressSearchQuery.trim() && !isSearchingAddress))}
+        onSelect={handleAddressSelect}
+        searchQuery={addressSearchQuery}
+        isSearching={isSearchingAddress}
+      />
     </BottomSheet>
   );
 }
