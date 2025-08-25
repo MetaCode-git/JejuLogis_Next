@@ -6,7 +6,8 @@ import { cn } from '@/lib/theme';
 interface ResponsiveContainerProps {
   className?: string;
   children: React.ReactNode;
-  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full';
+  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | '7xl' | '1280' | 'full';
+  centered?: boolean;
 }
 
 const maxWidthClasses = {
@@ -15,18 +16,26 @@ const maxWidthClasses = {
   lg: 'max-w-lg',
   xl: 'max-w-xl',
   '2xl': 'max-w-2xl',
+  '3xl': 'max-w-3xl',
+  '4xl': 'max-w-4xl',
+  '5xl': 'max-w-5xl',
+  '6xl': 'max-w-6xl',
+  '7xl': 'max-w-7xl',
+  '1280': 'max-w-[1280px]',
   full: 'max-w-full'
 };
 
 export function ResponsiveContainer({ 
   className, 
   children, 
-  maxWidth = 'full' 
+  maxWidth = 'full',
+  centered = false 
 }: ResponsiveContainerProps) {
   return (
     <div className={cn(
       'container mx-auto px-4',
       maxWidthClasses[maxWidth],
+      centered && 'text-center',
       className
     )}>
       {children}

@@ -175,7 +175,7 @@ export function InsurancePage() {
     <div className="min-h-screen bg-gray-50">
       {/* 히어로 섹션 */}
       <section className="relative bg-gradient-to-r from-indigo-600 to-indigo-700 text-white py-20">
-        <ResponsiveContainer>
+        <ResponsiveContainer maxWidth="1280">
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4 font-jua">
               보험 안내
@@ -214,7 +214,7 @@ export function InsurancePage() {
 
       {/* 보장 혜택 */}
       <section className="py-16">
-        <ResponsiveContainer>
+        <ResponsiveContainer maxWidth="1280">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">왜 제주탁송 보험인가요?</h2>
             <p className="text-gray-600">안전하고 신뢰할 수 있는 4가지 보장 혜택</p>
@@ -239,7 +239,7 @@ export function InsurancePage() {
 
       {/* 보험 유형 */}
       <section className="py-16 bg-white">
-        <ResponsiveContainer>
+        <ResponsiveContainer maxWidth="1280">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">보험 종류 및 보장 내용</h2>
             <p className="text-gray-600">다양한 보험으로 완벽한 보장</p>
@@ -287,7 +287,7 @@ export function InsurancePage() {
 
       {/* 상세 정보 탭 */}
       <section className="py-16">
-        <ResponsiveContainer>
+        <ResponsiveContainer maxWidth="1280">
           <Tabs defaultValue="coverage" className="w-full">
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="coverage">보장 범위</TabsTrigger>
@@ -492,7 +492,7 @@ export function InsurancePage() {
 
       {/* FAQ 섹션 */}
       <section className="py-16 bg-white">
-        <ResponsiveContainer>
+        <ResponsiveContainer maxWidth="1280">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">보험 관련 자주 묻는 질문</h2>
             <p className="text-gray-600">보험에 대한 궁금한 점들</p>
@@ -517,7 +517,7 @@ export function InsurancePage() {
 
       {/* CTA 섹션 */}
       <section className="py-16 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white">
-        <ResponsiveContainer>
+        <ResponsiveContainer maxWidth="1280">
           <div className="text-center">
             <h2 className="text-3xl font-bold mb-4">안심하고 이용하세요</h2>
             <p className="text-xl mb-8 opacity-90">

@@ -5,6 +5,7 @@ import { CompanyProvider } from '@/contexts/CompanyContext';
 import { QueryProvider } from '@/providers/QueryProvider';
 import { Toaster } from '@/components/ui/sonner';
 import { PWAInstaller } from '@/components/common/PWAInstaller';
+import { FloatingEstimateButton } from '@/components/common/FloatingEstimateButton';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
 
 const spoqaHanSans = localFont({
@@ -67,6 +68,7 @@ export default function RootLayout({
           <QueryProvider>
             <CompanyProvider>
               {children}
+              <FloatingEstimateButton />
               <PWAInstaller />
               <Toaster />
             </CompanyProvider>

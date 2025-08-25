@@ -116,9 +116,9 @@ export function SearchBox({
   };
 
   const handleResultSelect = (result: SearchResult) => {
-    setInputValue(result.roadAddress || result.address);
+    setInputValue(result.address);
     setIsOpen(false);
-    onChange?.(result.roadAddress || result.address);
+    onChange?.(result.address);
     onSelect?.(result);
     inputRef.current?.blur();
   };

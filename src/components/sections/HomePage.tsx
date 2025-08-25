@@ -7,7 +7,6 @@ import { Carousel } from '@/components/ui/carousel';
 import { ResponsiveContainer } from '@/components/common/ResponsiveContainer';
 import { useCompany } from '@/contexts/CompanyContext';
 import { PageLoading } from '@/components/common/LoadingSpinner';
-import { EstimateBottomSheet } from '@/components/estimate/EstimateBottomSheet';
 import Image from 'next/image';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -15,7 +14,6 @@ import { Calculator, Phone, Building, Shield } from 'lucide-react';
 
 export function HomePage() {
   const { config, loading, error } = useCompany();
-  const [isEstimateBottomSheetOpen, setIsEstimateBottomSheetOpen] = useState(false);
 
   if (loading) {
     return <PageLoading message="페이지를 불러오는 중..." />;
@@ -58,7 +56,7 @@ export function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-red-50 to-white">
       {/* Hero Carousel */}
-      <section className="relative">
+      <section>
         <Carousel
           slides={heroSlides}
           aspectRatio="banner"
@@ -66,59 +64,23 @@ export function HomePage() {
           autoPlayInterval={4000}
           className="h-[400px] md:h-[500px]"
         />
-        
-        {/* Call to Action Overlay */}
-        <div className="absolute inset-0 flex items-end pb-16">
-          <ResponsiveContainer>
-            <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
-              <EnhancedButton
-                size="lg"
-                gradient
-                icon={Calculator}
-                iconPosition="left"
-                className="text-white shadow-lg"
-                onClick={() => setIsEstimateBottomSheetOpen(true)}
-              >
-                견적조회
-              </EnhancedButton>
-              <EnhancedButton
-                size="lg"
-                gradient
-                icon={Calculator}
-                iconPosition="left"
-                className="text-white shadow-lg"
-                asChild
-              >
-                <Link href="/estimate">견적 신청하기</Link>
-              </EnhancedButton>
-              <EnhancedButton
-                size="lg"
-                variant="outline"
-                className="bg-white/90 hover:bg-white border-white"
-                asChild
-              >
-                <Link href="/company">서비스 둘러보기</Link>
-              </EnhancedButton>
-            </div>
-          </ResponsiveContainer>
-        </div>
       </section>
 
       {/* Quick Contact Bar */}
-      <section className="bg-red-600 text-white py-4">
-        <ResponsiveContainer>
+      <section className="bg-red-600 text-white py-6">
+        <ResponsiveContainer maxWidth="1280" centered>
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <Phone className="w-5 h-5" />
               <div>
-                <span className="font-bold">{config.company.phone}</span>
+                <span className="font-bold text-lg">{config.company.phone}</span>
                 <span className="ml-4 text-red-100">{config.company.businessHours}</span>
               </div>
             </div>
             <EnhancedButton
               variant="outline"
-              size="sm"
-              className="border-white text-white hover:bg-white hover:text-red-600"
+              size="md"
+              className="border-white text-white hover:bg-white hover:text-red-600 px-6 py-2"
               icon={Phone}
               onClick={() => window.open(`tel:${config.company.phone}`)}
             >
@@ -128,13 +90,17 @@ export function HomePage() {
         </ResponsiveContainer>
       </section>
 
+
       {/* Services Section */}
       <section className="py-16 bg-gray-50">
-        <ResponsiveContainer>
-          <h3 className="text-3xl font-bold text-center mb-12 text-gray-900">
+        <ResponsiveContainer maxWidth="1280" centered>
+          <h3 className="text-2xl md:text-3xl font-bold mb-4 text-gray-900">
             주요 서비스
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <p className="text-lg text-gray-600 mb-12">
+            제주탁송에서 제공하는 전문 서비스를 확인해보세요
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
             {config.services.vehicleTransport && (
               <ServiceCard 
                 title="차량 견적"
@@ -183,9 +149,10 @@ export function HomePage() {
       </section>
 
       {/* Company Info */}
-      <section className="py-16">
-        <ResponsiveContainer maxWidth="2xl">
-          <h3 className="text-3xl font-bold text-center mb-8 text-gray-900">회사 정보</h3>
+      <section className="py-20 bg-gray-50">
+        <ResponsiveContainer maxWidth="1280" centered>
+          <h2 className="text-4xl font-bold mb-4 text-gray-900">회사 정보</h2>
+          <p className="text-xl text-gray-600 mb-12">제주탁송과 함께하세요</p>
           <Card>
             <CardContent className="p-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
@@ -208,11 +175,6 @@ export function HomePage() {
         </ResponsiveContainer>
       </section>
 
-      {/* Estimate Bottom Sheet */}
-      <EstimateBottomSheet 
-        isOpen={isEstimateBottomSheetOpen}
-        onClose={() => setIsEstimateBottomSheetOpen(false)}
-      />
     </div>
   );
 }
@@ -242,19 +204,19 @@ function ServiceCard({ title, description, image, href, color, icon: Icon }: Ser
   };
 
   return (
-    <Card className="hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-0 shadow-md">
-      <CardHeader className="text-center pb-4">
+    <Card className="hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border-0 shadow-lg h-full w-full max-w-sm">
+      <CardHeader className="text-center pb-6 p-6">
         <div className={`w-16 h-16 mx-auto mb-4 ${colorClasses[color]} rounded-full flex items-center justify-center transition-colors`}>
           <Icon className={`w-8 h-8 ${iconColorClasses[color]}`} />
         </div>
-        <CardTitle className="text-lg mb-2">{title}</CardTitle>
-        <CardDescription className="text-gray-600">{description}</CardDescription>
+        <CardTitle className="text-xl mb-2 font-bold">{title}</CardTitle>
+        <CardDescription className="text-gray-600 text-base leading-relaxed">{description}</CardDescription>
       </CardHeader>
-      <CardContent className="text-center pt-0">
+      <CardContent className="text-center pt-0 pb-6">
         <EnhancedButton 
           variant="outline" 
           size="sm"
-          className={`border-${color.toLowerCase()}-200 hover:bg-${color.toLowerCase()}-50`}
+          className={`border-${color.toLowerCase()}-200 hover:bg-${color.toLowerCase()}-50 px-4 py-2 font-semibold`}
           asChild
         >
           <Link href={href}>자세히 보기</Link>

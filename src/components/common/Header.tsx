@@ -39,9 +39,6 @@ export function Header() {
           {/* Desktop Navigation */}
           <HideOn breakpoint="mobile">
             <nav className="flex items-center space-x-8">
-              <Link href="/estimate" className="text-gray-700 hover:text-red-600 transition-colors">
-                견적신청
-              </Link>
               <Link href="/company" className="text-gray-700 hover:text-red-600 transition-colors">
                 회사소개
               </Link>
@@ -82,13 +79,6 @@ export function Header() {
         {mobileMenuOpen && (
           <ShowOn breakpoint="mobile">
             <nav className="border-t border-gray-200 py-4 space-y-4">
-              <Link 
-                href="/estimate" 
-                className="block text-gray-700 hover:text-red-600 transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                견적신청
-              </Link>
               <Link 
                 href="/company" 
                 className="block text-gray-700 hover:text-red-600 transition-colors"

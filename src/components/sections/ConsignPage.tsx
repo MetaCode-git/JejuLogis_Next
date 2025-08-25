@@ -135,7 +135,7 @@ export function ConsignPage() {
     <div className="min-h-screen bg-gray-50">
       {/* 히어로 섹션 */}
       <section className="relative bg-gradient-to-r from-green-600 to-green-700 text-white py-20">
-        <ResponsiveContainer>
+        <ResponsiveContainer maxWidth="1280">
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4 font-jua">
               차량 위탁 서비스
@@ -160,7 +160,7 @@ export function ConsignPage() {
 
       {/* 서비스 유형 */}
       <section className="py-16">
-        <ResponsiveContainer>
+        <ResponsiveContainer maxWidth="1280">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">위탁 서비스 유형</h2>
             <p className="text-gray-600">다양한 기간과 요구사항에 맞는 위탁 서비스</p>
@@ -197,7 +197,7 @@ export function ConsignPage() {
 
       {/* 주요 특징 */}
       <section className="py-16 bg-white">
-        <ResponsiveContainer>
+        <ResponsiveContainer maxWidth="1280">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">왜 제주탁송 위탁 서비스인가요?</h2>
             <p className="text-gray-600">안전하고 신뢰할 수 있는 4가지 핵심 서비스</p>
@@ -219,7 +219,7 @@ export function ConsignPage() {
 
       {/* 상세 정보 탭 */}
       <section className="py-16">
-        <ResponsiveContainer>
+        <ResponsiveContainer maxWidth="1280">
           <Tabs defaultValue="process" className="w-full">
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="process">이용 절차</TabsTrigger>
@@ -424,7 +424,7 @@ export function ConsignPage() {
 
       {/* FAQ 섹션 */}
       <section className="py-16 bg-white">
-        <ResponsiveContainer>
+        <ResponsiveContainer maxWidth="1280">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">자주 묻는 질문</h2>
             <p className="text-gray-600">위탁 서비스에 대한 궁금한 점들</p>
@@ -449,7 +449,7 @@ export function ConsignPage() {
 
       {/* CTA 섹션 */}
       <section className="py-16 bg-gradient-to-r from-green-600 to-green-700 text-white">
-        <ResponsiveContainer>
+        <ResponsiveContainer maxWidth="1280">
           <div className="text-center">
             <h2 className="text-3xl font-bold mb-4">안전한 차량 위탁 서비스</h2>
             <p className="text-xl mb-8 opacity-90">

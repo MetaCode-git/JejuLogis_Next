@@ -134,7 +134,7 @@ export function EstimateResultPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <ResponsiveContainer>
+      <ResponsiveContainer maxWidth="1280">
         <div className="max-w-4xl mx-auto">
           {/* 헤더 */}
           <div className="text-center mb-8">

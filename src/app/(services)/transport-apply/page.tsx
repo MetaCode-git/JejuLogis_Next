@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense } from 'react';
+import { Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,6 +16,13 @@ function TransportApplyContent() {
   const departure = searchParams.get('departure') || '';
   const arrival = searchParams.get('arrival') || '';
   const cost = searchParams.get('cost') || '';
+
+  // 폼 상태 관리
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [customerEmail, setCustomerEmail] = useState('');
+  const [transportDateTime, setTransportDateTime] = useState('');
+  const [specialRequests, setSpecialRequests] = useState('');
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -84,7 +91,11 @@ function TransportApplyContent() {
                   <User className="inline w-4 h-4 mr-1" />
                   고객명
                 </label>
-                <Input placeholder="이름을 입력하세요" />
+                <Input 
+                  placeholder="이름을 입력하세요" 
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                />
               </div>
               
               <div>
@@ -92,7 +103,11 @@ function TransportApplyContent() {
                   <Phone className="inline w-4 h-4 mr-1" />
                   연락처
                 </label>
-                <Input placeholder="010-0000-0000" />
+                <Input 
+                  placeholder="010-0000-0000" 
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                />
               </div>
               
               <div>
@@ -100,7 +115,11 @@ function TransportApplyContent() {
                   <Mail className="inline w-4 h-4 mr-1" />
                   이메일 (선택)
                 </label>
-                <Input placeholder="example@email.com" />
+                <Input 
+                  placeholder="example@email.com" 
+                  value={customerEmail}
+                  onChange={(e) => setCustomerEmail(e.target.value)}
+                />
               </div>
               
               <div>
@@ -108,7 +127,11 @@ function TransportApplyContent() {
                   <Calendar className="inline w-4 h-4 mr-1" />
                   희망 탁송 일시
                 </label>
-                <Input type="datetime-local" />
+                <Input 
+                  type="datetime-local" 
+                  value={transportDateTime}
+                  onChange={(e) => setTransportDateTime(e.target.value)}
+                />
               </div>
               
               <div>
@@ -119,6 +142,8 @@ function TransportApplyContent() {
                   className="w-full p-3 border border-gray-300 rounded-md resize-none"
                   rows={3}
                   placeholder="특별히 요청할 사항이 있으시면 입력해주세요"
+                  value={specialRequests}
+                  onChange={(e) => setSpecialRequests(e.target.value)}
                 />
               </div>
             </div>
@@ -146,6 +171,49 @@ function TransportApplyContent() {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* 테스트 버튼 */}
+          <div className="mb-6">
+            <Button 
+              onClick={() => {
+                // 랜덤 고객 정보 데이터
+                const testNames = ['김철수', '이영희', '박민수', '정수진', '최대영'];
+                const testPhones = ['010-1234-5678', '010-9876-5432', '010-5555-7777', '010-3333-8888'];
+                const testEmails = ['test@naver.com', 'customer@gmail.com', 'user@daum.net', 'sample@kakao.com'];
+                const testRequests = [
+                  '차량 하부 긁힌 부분이 있습니다.',
+                  '조심히 운송 부탁드립니다.',
+                  '차량 안에 향수병이 있으니 주의해주세요.',
+                  '빠른 배송 부탁드립니다.',
+                  ''
+                ];
+                
+                // 랜덤 데이터 생성
+                const randomName = testNames[Math.floor(Math.random() * testNames.length)];
+                const randomPhone = testPhones[Math.floor(Math.random() * testPhones.length)];
+                const randomEmail = testEmails[Math.floor(Math.random() * testEmails.length)];
+                const randomRequest = testRequests[Math.floor(Math.random() * testRequests.length)];
+                
+                // 현재 시간에서 1-3일 후 랜덤 시간 생성
+                const now = new Date();
+                const randomDays = Math.floor(Math.random() * 3) + 1; // 1-3일
+                const randomHours = Math.floor(Math.random() * 10) + 8; // 8-17시
+                const futureDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + randomDays, randomHours, 0);
+                const randomDateTime = futureDate.toISOString().slice(0, 16);
+                
+                // 상태 업데이트
+                setCustomerName(randomName);
+                setCustomerPhone(randomPhone);
+                setCustomerEmail(randomEmail);
+                setTransportDateTime(randomDateTime);
+                setSpecialRequests(randomRequest);
+              }}
+              variant="outline"
+              className="w-full h-10 text-sm"
+            >
+              🎲 테스트 데이터 채우기
+            </Button>
           </div>
 
           {/* 신청 버튼 */}

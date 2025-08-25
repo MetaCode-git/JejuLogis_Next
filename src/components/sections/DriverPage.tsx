@@ -81,7 +81,7 @@ export function DriverPage() {
     <div className="min-h-screen bg-gray-50">
       {/* 히어로 섹션 */}
       <section className="relative bg-gradient-to-r from-blue-600 to-blue-700 text-white py-20">
-        <ResponsiveContainer>
+        <ResponsiveContainer maxWidth="1280">
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4 font-jua">
               {config.designatedDriver.name}
@@ -106,7 +106,7 @@ export function DriverPage() {
 
       {/* 주요 특징 */}
       <section className="py-16">
-        <ResponsiveContainer>
+        <ResponsiveContainer maxWidth="1280">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">왜 번개 대리운전인가요?</h2>
             <p className="text-gray-600">안전하고 신속한 서비스를 위한 6가지 약속</p>
@@ -128,7 +128,7 @@ export function DriverPage() {
 
       {/* 상세 정보 탭 */}
       <section className="py-16 bg-white">
-        <ResponsiveContainer>
+        <ResponsiveContainer maxWidth="1280">
           <Tabs defaultValue="service" className="w-full">
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="service">서비스 안내</TabsTrigger>
@@ -378,7 +378,7 @@ export function DriverPage() {
 
       {/* CTA 섹션 */}
       <section className="py-16 bg-gradient-to-r from-blue-600 to-blue-700 text-white">
-        <ResponsiveContainer>
+        <ResponsiveContainer maxWidth="1280">
           <div className="text-center">
             <h2 className="text-3xl font-bold mb-4">지금 바로 대리운전을 호출하세요</h2>
             <p className="text-xl mb-8 opacity-90">

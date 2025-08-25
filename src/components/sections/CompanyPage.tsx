@@ -76,7 +76,7 @@ export function CompanyPage() {
     <div className="min-h-screen bg-gray-50">
       {/* 히어로 섹션 */}
       <section className="relative bg-gradient-to-r from-red-600 to-red-700 text-white py-20">
-        <ResponsiveContainer>
+        <ResponsiveContainer maxWidth="1280">
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4 font-jua">
               {config.company.name}
@@ -100,8 +100,8 @@ export function CompanyPage() {
 
       {/* 실적 및 성과 */}
       <section className="py-16">
-        <ResponsiveContainer>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <ResponsiveContainer maxWidth="1280">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {achievements.map((item, index) => (
               <Card key={index} className="text-center border-0 shadow-md">
                 <CardContent className="p-6">
@@ -117,7 +117,7 @@ export function CompanyPage() {
 
       {/* 주요 정보 탭 */}
       <section className="py-16 bg-white">
-        <ResponsiveContainer>
+        <ResponsiveContainer maxWidth="1280">
           <Tabs defaultValue="services" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="services">서비스 소개</TabsTrigger>
@@ -287,7 +287,7 @@ export function CompanyPage() {
 
       {/* FAQ 섹션 */}
       <section className="py-16">
-        <ResponsiveContainer>
+        <ResponsiveContainer maxWidth="1280">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">자주 묻는 질문</h2>
             <p className="text-gray-600">궁금한 점이 있으시면 확인해보세요</p>
@@ -312,7 +312,7 @@ export function CompanyPage() {
 
       {/* CTA 섹션 */}
       <section className="py-16 bg-gradient-to-r from-red-600 to-red-700 text-white">
-        <ResponsiveContainer>
+        <ResponsiveContainer maxWidth="1280">
           <div className="text-center">
             <h2 className="text-3xl font-bold mb-4">지금 바로 견적을 받아보세요</h2>
             <p className="text-xl mb-8 opacity-90">

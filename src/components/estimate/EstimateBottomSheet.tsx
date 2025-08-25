@@ -98,10 +98,10 @@ const FloatingAddressDropdown = ({
               className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
             >
               <div className="font-medium text-gray-900">
-                {address.roadAddress || address.jibunAddress}
+                {address.jibunAddress || address.address}
               </div>
-              {address.roadAddress && address.jibunAddress && address.roadAddress !== address.jibunAddress && (
-                <div className="text-sm text-gray-500">({address.jibunAddress})</div>
+              {address.jibunAddress && address.roadAddress && address.jibunAddress !== address.roadAddress && (
+                <div className="text-sm text-gray-500">({address.roadAddress})</div>
               )}
               {address.buildingName && address.buildingName.trim() && (
                 <div className="text-xs text-blue-600">{address.buildingName}</div>
@@ -198,6 +198,7 @@ export function EstimateBottomSheet({ isOpen, onClose }: EstimateBottomSheetProp
   // 로딩 상태
   const [isSearchingVehicle, setIsSearchingVehicle] = useState(false);
   const [isCalculating, setIsCalculating] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   // 견적 결과
   const [estimateResult, setEstimateResult] = useState<SimpleEstimateResponse | null>(null);
@@ -327,7 +328,7 @@ export function EstimateBottomSheet({ isOpen, onClose }: EstimateBottomSheetProp
   // 주소 선택
   const handleAddressSelect = (address: AddressResult) => {
     console.log('🏠 주소 선택:', address);
-    const selectedAddress = address.roadAddress || address.jibunAddress;
+    const selectedAddress = address.jibunAddress || address.address;
     
     if (addressSearchMode === 'departure') {
       setDepartureAddress(selectedAddress);
@@ -386,6 +387,7 @@ export function EstimateBottomSheet({ isOpen, onClose }: EstimateBottomSheetProp
     setArrivalAddress('');
     setVehicleResults([]);
     setEstimateResult(null);
+    setIsNavigating(false);
     // 주소 검색 상태 초기화
     setAddressSearchMode(null);
     setAddressSearchQuery('');
@@ -402,7 +404,7 @@ export function EstimateBottomSheet({ isOpen, onClose }: EstimateBottomSheetProp
     <BottomSheet
       isOpen={isOpen}
       onClose={handleClose}
-      title="견적 조회"
+      title="간편 견적 조회"
       maxHeight="85vh"
       className="pb-safe"
     >
@@ -463,18 +465,30 @@ export function EstimateBottomSheet({ isOpen, onClose }: EstimateBottomSheetProp
             <div className="space-y-3">
               <Button 
                 className="w-full h-12 text-lg font-medium bg-blue-600 hover:bg-blue-700"
-                onClick={() => {
-                  // 탁송 신청 페이지로 이동
-                  const vehicleInfo = selectedVehicle ? `${selectedVehicle.maker} ${selectedVehicle.name}` : '';
-                  const params = new URLSearchParams({
-                    vehicle: vehicleInfo,
-                    departure: departureAddress,
-                    arrival: arrivalAddress,
-                    cost: estimateResult.cost.toString()
-                  });
+                disabled={isNavigating}
+                onClick={async () => {
+                  setIsNavigating(true);
                   
-                  router.push(`/transport-apply?${params.toString()}`);
-                  onClose(); // BottomSheet 닫기
+                  // 최소 250ms 대기 시간 보장
+                  const [_, navigationResult] = await Promise.all([
+                    new Promise(resolve => setTimeout(resolve, 250)),
+                    (async () => {
+                      // 탁송 신청 페이지로 이동
+                      const vehicleInfo = selectedVehicle ? `${selectedVehicle.maker} ${selectedVehicle.name}` : '';
+                      const params = new URLSearchParams({
+                        vehicle: vehicleInfo,
+                        departure: departureAddress,
+                        arrival: arrivalAddress,
+                        cost: estimateResult.cost.toString()
+                      });
+                      
+                      return router.push(`/transport-apply?${params.toString()}`);
+                    })()
+                  ]);
+                  
+                  // 페이지 전환 완료 후 BottomSheet 닫기
+                  onClose();
+                  setIsNavigating(false);
                 }}
               >
                 탁송 신청하기
@@ -495,7 +509,7 @@ export function EstimateBottomSheet({ isOpen, onClose }: EstimateBottomSheetProp
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
                 <Car className="w-4 h-4" />
-                차종
+                차종 *
               </label>
               <div className="relative" ref={vehicleInputRef}>
                 <Input
@@ -514,7 +528,7 @@ export function EstimateBottomSheet({ isOpen, onClose }: EstimateBottomSheetProp
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-green-500" />
-                출발지
+                출발지 *
               </label>
               {addressSearchMode === 'departure' ? (
                 <div className="relative" ref={departureInputRef}>
@@ -548,7 +562,7 @@ export function EstimateBottomSheet({ isOpen, onClose }: EstimateBottomSheetProp
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-red-500" />
-                도착지
+                도착지 *
               </label>
               {addressSearchMode === 'arrival' ? (
                 <div className="relative" ref={arrivalInputRef}>
@@ -578,8 +592,50 @@ export function EstimateBottomSheet({ isOpen, onClose }: EstimateBottomSheetProp
               )}
             </div>
 
-            {/* 견적 계산 버튼 */}
+            {/* 빠른 테스트 버튼 */}
             <div className="pt-4">
+              <Button 
+                onClick={() => {
+                  // 랜덤 데이터 설정
+                  const testVehicles = ['벨로스터', '맥스크루즈', 'g70', 'k5', '아이오닉'];
+                  const testDepartures = [
+                    '경기도 화성시 산척동 699',
+                    '경기도 용인시 기흥구 보정동 266-4',
+                    '서울특별시 강남구 역삼동 823-22 성곡빌딩'
+                  ];
+                  const testArrivals = [
+                    '제주특별자치도 제주시 한림읍 협재리 1791 협재교회',
+                    '제주특별자치도 서귀포시 안덕면 서광리 산39 제주항공우주박물관'
+                  ];
+                  
+                  const randomVehicle = testVehicles[Math.floor(Math.random() * testVehicles.length)];
+                  const randomDeparture = testDepartures[Math.floor(Math.random() * testDepartures.length)];
+                  const randomArrival = testArrivals[Math.floor(Math.random() * testArrivals.length)];
+                  
+                  // 차량 설정 (임시 객체 생성)
+                  setSelectedVehicle({
+                    id: '999',
+                    name: randomVehicle,
+                    maker: '',
+                    type: 'test',
+                    priceNormal: 0,
+                    priceExpress: 0
+                  });
+                  setVehicleQuery(randomVehicle);
+                  
+                  // 주소 설정
+                  setDepartureAddress(randomDeparture);
+                  setArrivalAddress(randomArrival);
+                }}
+                variant="outline"
+                className="w-full h-10 mb-3 text-sm"
+              >
+                🎲 빠른 테스트 (랜덤 데이터)
+              </Button>
+            </div>
+
+            {/* 견적 계산 버튼 */}
+            <div>
               <Button 
                 onClick={handleCalculateEstimate}
                 disabled={!selectedVehicle || !departureAddress.trim() || !arrivalAddress.trim() || isCalculating}
@@ -598,14 +654,6 @@ export function EstimateBottomSheet({ isOpen, onClose }: EstimateBottomSheetProp
                 )}
               </Button>
               
-              {/* 버튼 비활성화 이유 표시 */}
-              {(!selectedVehicle || !departureAddress.trim() || !arrivalAddress.trim()) && (
-                <p className="text-sm text-gray-500 text-center mt-2">
-                  {!selectedVehicle && '차종을 선택하세요. '}
-                  {!departureAddress.trim() && '출발지를 입력하세요. '}
-                  {!arrivalAddress.trim() && '도착지를 입력하세요.'}
-                </p>
-              )}
             </div>
           </div>
         )}
@@ -628,6 +676,13 @@ export function EstimateBottomSheet({ isOpen, onClose }: EstimateBottomSheetProp
         searchQuery={addressSearchQuery}
         isSearching={isSearchingAddress}
       />
+
+      {/* 전체 화면 로딩 오버레이 */}
+      {isNavigating && (
+        <div className="fixed inset-0 z-[9999] bg-black/30 flex items-center justify-center">
+          <Loader2 className="w-12 h-12 animate-spin text-white" />
+        </div>
+      )}
     </BottomSheet>
   );
 }

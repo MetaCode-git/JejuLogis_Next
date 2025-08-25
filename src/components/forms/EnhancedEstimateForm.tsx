@@ -323,7 +323,7 @@ export function EnhancedEstimateForm() {
                           onChange={field.onChange}
                           onSearch={handleAddressSearch}
                           placeholder="출발지 주소를 검색하세요"
-                          onSelect={(result) => field.onChange(result.roadAddress)}
+                          onSelect={(result) => field.onChange(result.address)}
                         />
                         {transportForm.formState.errors.departureAddress && (
                           <p className="mt-1 text-sm text-red-600 flex items-center">
@@ -348,7 +348,7 @@ export function EnhancedEstimateForm() {
                           onChange={field.onChange}
                           onSearch={handleAddressSearch}
                           placeholder="도착지 주소를 검색하세요"
-                          onSelect={(result) => field.onChange(result.roadAddress)}
+                          onSelect={(result) => field.onChange(result.address)}
                         />
                         {transportForm.formState.errors.arrivalAddress && (
                           <p className="mt-1 text-sm text-red-600 flex items-center">
