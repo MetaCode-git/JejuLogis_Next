@@ -1,5 +1,5 @@
 import { api, API_ENDPOINTS } from './api';
-import type { Vehicle, VehicleSearchResponse, EstimateRequest, EstimateResponse, SimpleEstimateResponse, AddressSearchResult } from '@/types/api';
+import type { Vehicle, VehicleSearchResponse, EstimateRequest, EstimateResponse, SimpleEstimateResponse, AddressSearchResult, EstimateSaveRequest, EstimateSaveResponse } from '@/types/api';
 
 // 제주탁송 실제 API 서비스 - 정확한 엔드포인트
 export class JejuLogisApiService {
@@ -97,14 +97,27 @@ export class JejuLogisApiService {
   }
 
   /**
-   * 견적 저장
+   * 견적 저장 (탁송 신청)
    * API: POST /estimates/save
    * @param estimateData 저장할 견적 데이터
    */
-  async saveEstimate(estimateData: any): Promise<any> {
+  async saveEstimate(estimateData: EstimateSaveRequest): Promise<EstimateSaveResponse> {
     try {
-      const response = await api.post<any>(API_ENDPOINTS.estimatesSave, estimateData);
-      return response.data;
+      console.log('🔍 견적 저장 API 요청:', {
+        endpoint: API_ENDPOINTS.estimatesSave,
+        data: estimateData
+      });
+
+      const response = await api.post<EstimateSaveResponse>(API_ENDPOINTS.estimatesSave, estimateData);
+      
+      console.log('🔍 견적 저장 API 응답:', {
+        response: response,
+        data: response.data
+      });
+
+      // 서버가 직접 응답을 반환하는 경우와 {data: ...} 형태 모두 처리
+      const result = response.data || response;
+      return result;
     } catch (error) {
       console.error('견적 저장 실패:', error);
       throw error;

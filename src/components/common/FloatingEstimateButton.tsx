@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { EnhancedButton } from '@/components/ui/enhanced-button';
 import { EstimateBottomSheet } from '@/components/estimate/EstimateBottomSheet';
 import { Calculator } from 'lucide-react';
@@ -12,6 +13,12 @@ interface FloatingEstimateButtonProps {
 
 export function FloatingEstimateButton({ className }: FloatingEstimateButtonProps) {
   const [isEstimateBottomSheetOpen, setIsEstimateBottomSheetOpen] = useState(false);
+  const pathname = usePathname();
+
+  // 탁송 신청 페이지에서는 버튼을 숨김
+  if (pathname === '/transport-apply') {
+    return null;
+  }
 
   return (
     <>

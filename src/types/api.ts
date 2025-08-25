@@ -66,16 +66,17 @@ export interface EstimateResponse {
 
 // 견적 저장 요청 (POST /estimates/save)
 export interface EstimateSaveRequest {
-  departure_address: string;
-  arrival_address: string;
-  vehicle_name: string;
-  transport_date: string;
-  customer_name?: string;
-  customer_phone?: string;
-  customer_email?: string;
-  base_price: number;
-  total_price: number;
-  additional_notes?: string;
+  companyKey: string;      // "JEJULOGIS" 고정값
+  departure: string;       // 출발지
+  arrival: string;         // 도착지
+  carName: string;         // 차량명
+  transportDate: string;   // 운송날짜 (YYYY-MM-DD)
+  cost: number;           // 총 견적 금액
+  customerName: string;    // 고객명
+  customerPhone: string;   // 고객 전화번호
+  customerEmail?: string;  // 고객 이메일 (선택)
+  memo?: string;          // 특별 요청사항 (선택)
+  status: number;         // 0 기본값
 }
 
 // 견적 필터 요청 (POST /estimates/filtered)
@@ -132,3 +133,12 @@ export type EstimateListResponse = EstimateResponse[];
 
 // 필터링된 견적 응답 타입
 export type FilteredEstimateResponse = EstimateResponse[];
+
+// 견적 저장 응답 타입
+export interface EstimateSaveResponse {
+  status: string;    // "CREATED"
+  message: string;   // "견적이 성공적으로 저장되었습니다."
+  data: {
+    id: number;      // 저장된 견적 ID (예: 97)
+  };
+}

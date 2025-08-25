@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { jejuLogisApi } from '@/lib/jejulogis-api';
 import { toast } from 'sonner';
 import type { EstimateResult } from '@/stores/useEstimateStore';
-import type { Vehicle, EstimateResponse } from '@/types/api';
+import type { Vehicle, EstimateResponse, EstimateSaveRequest, EstimateSaveResponse } from '@/types/api';
 
 // 견적 요청 데이터 타입
 export interface EstimateRequest {
@@ -65,21 +65,22 @@ export function useCalculateEstimate() {
   });
 }
 
-// 견적 저장
+// 견적 저장 (탁송 신청)
 export function useSaveEstimate() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: async (estimateData: any) => {
+  return useMutation<EstimateSaveResponse, Error, EstimateSaveRequest>({
+    mutationFn: async (estimateData: EstimateSaveRequest) => {
       return await jejuLogisApi.saveEstimate(estimateData);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['estimates'] });
-      toast.success('견적이 저장되었습니다!');
+      toast.success(data.message || '탁송 신청이 완료되었습니다!');
+      toast.info('담당자가 곧 연락드리겠습니다.');
     },
-    onError: (error: any) => {
-      console.error('견적 저장 실패:', error);
-      toast.error(error.message || '견적 저장 중 오류가 발생했습니다.');
+    onError: (error: Error) => {
+      console.error('탁송 신청 실패:', error);
+      toast.error(error.message || '탁송 신청 중 오류가 발생했습니다.');
     },
   });
 }

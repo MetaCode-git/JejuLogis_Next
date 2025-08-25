@@ -12,6 +12,8 @@ import {
   AlertCircle, Star, Shield, Truck 
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useSaveEstimate } from '@/hooks/useEstimateAPI';
+import type { EstimateSaveRequest } from '@/types/api';
 
 interface EstimateData {
   vehicleCategory: string;
@@ -44,6 +46,7 @@ export function EstimateResultPage() {
   const { config } = useCompany();
   const [estimateData, setEstimateData] = useState<EstimateData | null>(null);
   const [loading, setLoading] = useState(true);
+  const saveEstimateMutation = useSaveEstimate();
 
   useEffect(() => {
     // 실제로는 URL 파라미터나 API에서 데이터를 가져옴
@@ -101,9 +104,31 @@ export function EstimateResultPage() {
     }
   };
 
-  const handleConfirmEstimate = () => {
-    toast.success('견적 확정이 완료되었습니다!');
-    toast.info('담당자가 곧 연락드리겠습니다.');
+  const handleConfirmEstimate = async () => {
+    if (!estimateData) {
+      toast.error('견적 데이터를 찾을 수 없습니다.');
+      return;
+    }
+
+    const saveData: EstimateSaveRequest = {
+      companyKey: 'JEJULOGIS',
+      departure: estimateData.departureAddress,
+      arrival: estimateData.arrivalAddress,
+      carName: estimateData.vehicleModel,
+      transportDate: estimateData.transportDate,
+      cost: estimateData.totalPrice,
+      customerName: estimateData.customerName,
+      customerPhone: estimateData.customerPhone,
+      customerEmail: estimateData.customerEmail,
+      memo: estimateData.specialRequests,
+      status: 0
+    };
+
+    try {
+      await saveEstimateMutation.mutateAsync(saveData);
+    } catch (error) {
+      console.error('견적 확정 실패:', error);
+    }
   };
 
   if (loading) {
@@ -314,8 +339,10 @@ export function EstimateResultPage() {
                     gradient
                     onClick={handleConfirmEstimate}
                     className="text-base"
+                    loading={saveEstimateMutation.isPending}
+                    disabled={saveEstimateMutation.isPending}
                   >
-                    견적 확정 및 예약
+                    {saveEstimateMutation.isPending ? '신청 중...' : '탁송 신청하기'}
                   </EnhancedButton>
                   
                   <div className="grid grid-cols-2 gap-2">

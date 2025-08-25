@@ -1,15 +1,20 @@
 "use client"
 
 import { Suspense, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ResponsiveContainer } from '@/components/common/ResponsiveContainer';
-import { ArrowLeft, Car, MapPin, Phone, Mail, User, Calendar, CreditCard } from 'lucide-react';
+import { ArrowLeft, Car, MapPin, Phone, Mail, User, Calendar, CreditCard, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { useSaveEstimate } from '@/hooks/useEstimateAPI';
+import type { EstimateSaveRequest } from '@/types/api';
+import { toast } from 'sonner';
 
 function TransportApplyContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const saveEstimateMutation = useSaveEstimate();
   
   // URL 파라미터에서 견적 정보 가져오기
   const vehicle = searchParams.get('vehicle') || '';
@@ -23,6 +28,58 @@ function TransportApplyContent() {
   const [customerEmail, setCustomerEmail] = useState('');
   const [transportDateTime, setTransportDateTime] = useState('');
   const [specialRequests, setSpecialRequests] = useState('');
+
+  // 폼 유효성 검증
+  const validateForm = () => {
+    if (!customerName.trim()) {
+      toast.error('고객명을 입력해주세요.');
+      return false;
+    }
+    if (!customerPhone.trim()) {
+      toast.error('연락처를 입력해주세요.');
+      return false;
+    }
+    if (!transportDateTime) {
+      toast.error('희망 탁송 일시를 선택해주세요.');
+      return false;
+    }
+    if (!departure || !arrival || !vehicle || !cost) {
+      toast.error('견적 정보가 누락되었습니다. 다시 견적을 요청해주세요.');
+      return false;
+    }
+    return true;
+  };
+
+  // 탁송 신청 처리
+  const handleSubmit = async () => {
+    if (!validateForm()) {
+      return;
+    }
+
+    const saveData: EstimateSaveRequest = {
+      companyKey: 'JEJULOGIS',
+      departure,
+      arrival,
+      carName: vehicle,
+      transportDate: transportDateTime.split('T')[0], // YYYY-MM-DD 형식으로 변환
+      cost: parseInt(cost) || 0,
+      customerName: customerName.trim(),
+      customerPhone: customerPhone.trim(),
+      customerEmail: customerEmail.trim() || undefined,
+      memo: specialRequests.trim() || undefined,
+      status: 0
+    };
+
+    try {
+      await saveEstimateMutation.mutateAsync(saveData);
+      // 성공 시 홈페이지로 리다이렉트
+      setTimeout(() => {
+        router.push('/');
+      }, 2000);
+    } catch (error) {
+      console.error('탁송 신청 실패:', error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -220,12 +277,17 @@ function TransportApplyContent() {
           <div className="space-y-3">
             <Button 
               className="w-full h-12 text-lg font-medium bg-blue-600 hover:bg-blue-700"
-              onClick={() => {
-                // TODO: 실제 신청 처리 로직
-                alert('탁송 신청이 접수되었습니다. 곧 담당자가 연락드리겠습니다.');
-              }}
+              onClick={handleSubmit}
+              disabled={saveEstimateMutation.isPending}
             >
-              탁송 신청하기
+              {saveEstimateMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  신청 중...
+                </>
+              ) : (
+                '탁송 신청하기'
+              )}
             </Button>
             
             <Link href="/">
