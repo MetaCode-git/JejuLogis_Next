@@ -181,27 +181,27 @@ export const api = new ApiClient();
 // API 엔드포인트 상수들 - 실제 서버 API에 맞춰 수정
 export const API_ENDPOINTS = {
   // 차량 관련
-  carListTotal: '/car-list/total',  // 차량 목록 확인
-  carListSearch: (text: string) => `/car-list/search?text=${encodeURIComponent(text)}`,  // 차량 검색
+  carListTotal: '/api/v0/car-list/total',  // 차량 목록 확인
+  carListSearch: (text: string) => `/api/v0/car-list/search?text=${encodeURIComponent(text)}`,  // 차량 검색
   
   // 견적 관련
-  estimates: '/estimates',  // 견적 목록 확인 & 수정 결과 확인
-  estimatesCalculate: (dep: string, arr: string, name: string, date: string) => `/estimates/calculate?dep=${encodeURIComponent(dep)}&arr=${encodeURIComponent(arr)}&name=${encodeURIComponent(name)}&date=${date}`,  // 견적 계산
-  estimatesSave: '/estimates/save',  // 견적 저장
-  estimatesFiltered: '/estimates/filtered',  // 필터링된 견적 조회
-  estimatesById: (id: number) => `/estimates/${id}`,  // 개별 견적 조회
-  estimatesUpdate: (id: number) => `/estimates/${id}`,  // 견적 수정
-  estimatesByStatus: (status: number) => `/estimates/status/${status}`,  // 상태별 견적 조회
+  estimates: '/api/v0/estimates',  // 견적 목록 확인 & 수정 결과 확인
+  estimatesCalculate: (dep: string, arr: string, name: string, date: string) => `/api/v0/estimates/calculate?dep=${encodeURIComponent(dep)}&arr=${encodeURIComponent(arr)}&name=${encodeURIComponent(name)}&date=${date}`,  // 견적 계산
+  estimatesSave: '/api/v0/estimates/save',  // 견적 저장
+  estimatesFiltered: '/api/v0/estimates/filtered',  // 필터링된 견적 조회
+  estimatesById: (id: number) => `/api/v0/estimates/${id}`,  // 개별 견적 조회
+  estimatesUpdate: (id: number) => `/api/v0/estimates/${id}`,  // 견적 수정
+  estimatesByStatus: (status: number) => `/api/v0/estimates/status/${status}`,  // 상태별 견적 조회
   
   // 관리자 관련
-  adminLogin: '/admin/login',  // 관리자 로그인
-  adminList: '/admin',  // 관리자 목록 조회
-  adminCreate: '/admin',  // 관리자 등록
-  adminById: (id: number) => `/admin/${id}`,  // 관리자 상세 조회
-  adminUpdate: (id: number) => `/admin/${id}`,  // 관리자 정보 수정
-  adminDelete: (id: number) => `/admin/${id}`,  // 관리자 삭제
+  adminLogin: '/api/v0/admin/login',  // 관리자 로그인
+  adminList: '/api/v0/admin',  // 관리자 목록 조회
+  adminCreate: '/api/v0/admin',  // 관리자 등록
+  adminById: (id: number) => `/api/v0/admin/${id}`,  // 관리자 상세 조회
+  adminUpdate: (id: number) => `/api/v0/admin/${id}`,  // 관리자 정보 수정
+  adminDelete: (id: number) => `/api/v0/admin/${id}`,  // 관리자 삭제
   
   // 공휴일 관련
-  holidayCheck: (date: string) => `/holidays/check?date=${date}`,  // 특정 날짜 공휴일 확인
-  holidayMonth: (year: number, month: number) => `/holidays/month?year=${year}&month=${month}`,  // 월별 공휴일 조회
+  holidayCheck: (date: string) => `/api/v0/holidays/check?date=${date}`,  // 특정 날짜 공휴일 확인
+  holidayMonth: (year: number, month: number) => `/api/v0/holidays/month?year=${year}&month=${month}`,  // 월별 공휴일 조회
 } as const;

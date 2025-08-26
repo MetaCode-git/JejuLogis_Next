@@ -25,7 +25,7 @@ export function HomePage() {
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">페이지를 불러올 수 없습니다</h2>
           <p className="text-gray-600 mb-4">{error}</p>
-          <Button onClick={() => window.location.reload()}>다시 시도</Button>
+          <EnhancedButton onClick={() => window.location.reload()}>다시 시도</EnhancedButton>
         </div>
       </div>
     );
@@ -79,7 +79,7 @@ export function HomePage() {
             </div>
             <EnhancedButton
               variant="outline"
-              size="md"
+              size="default"
               className="border-white text-white hover:bg-white hover:text-red-600 px-6 py-2"
               icon={Phone}
               onClick={() => window.open(`tel:${config.company.phone}`)}

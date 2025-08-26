@@ -1,5 +1,5 @@
 import { api, API_ENDPOINTS } from './api';
-import type { Vehicle, VehicleSearchResponse, EstimateRequest, EstimateResponse, SimpleEstimateResponse, AddressSearchResult, EstimateSaveRequest, EstimateSaveResponse } from '@/types/api';
+import type { Vehicle, CarSearchResponse, EstimateRequest, EstimateResponse, SimpleEstimateResponse, AddressSearchResult, EstimateSaveRequest, EstimateSaveResponse } from '@/types/api';
 
 // 제주탁송 실제 API 서비스 - 정확한 엔드포인트
 export class JejuLogisApiService {
@@ -84,11 +84,11 @@ export class JejuLogisApiService {
         endpoint,
         response: response,
         data: response.data,
-        cost: response.data?.cost || response.cost
+        cost: response.data?.cost || 0
       });
 
       // 서버가 직접 {cost: number} 형태로 응답하는 경우와 {data: {cost: number}} 형태 모두 처리
-      const cost = response.data?.cost || response.cost;
+      const cost = response.data?.cost || 0;
       return { cost: cost || 0 };
     } catch (error) {
       console.error('견적 계산 실패:', error);

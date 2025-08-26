@@ -37,7 +37,7 @@ export const useAdminAuth = () => {
       // Base64 encode password as required by API
       const encodedPassword = btoa(password);
       
-      const response = await fetch(`${API_BASE_URL}/admin/login`, {
+      const response = await fetch(`${API_BASE_URL}/api/v0/admin/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

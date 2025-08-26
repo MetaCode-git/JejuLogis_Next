@@ -92,19 +92,15 @@ const EnhancedInput = forwardRef<HTMLInputElement, EnhancedInputProps>(
               'transition-all duration-200',
               
               // 아이콘 여백
-              icon && iconPosition === 'left' && 'pl-10',
-              icon && iconPosition === 'right' && 'pr-10',
+              icon && iconPosition === 'left' ? 'pl-10' : '',
+              icon && iconPosition === 'right' ? 'pr-10' : '',
               
               // 패스워드 토글 여백
               (type === 'password' && showPasswordToggle) && 'pr-10',
               
               // 상태별 스타일
-              hasError && [
-                'border-red-500 focus:border-red-500 focus:ring-red-200'
-              ],
-              hasSuccess && [
-                'border-green-500 focus:border-green-500 focus:ring-green-200'
-              ],
+              hasError && 'border-red-500 focus:border-red-500 focus:ring-red-200',
+              hasSuccess && 'border-green-500 focus:border-green-500 focus:ring-green-200',
               
               className
             )}

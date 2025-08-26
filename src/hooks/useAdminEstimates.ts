@@ -12,7 +12,7 @@ import {
   ESTIMATE_STATUS,
 } from '@/types/admin';
 
-// Use Next.js API proxy to avoid CORS issues
+// SSR 모드에서는 Next.js API proxy 사용 가능
 const ADMIN_API_BASE = '/api/proxy';
 
 export const useAdminEstimates = () => {

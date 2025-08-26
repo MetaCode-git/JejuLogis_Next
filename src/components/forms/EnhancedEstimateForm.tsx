@@ -13,6 +13,7 @@ import { StepProgress } from '@/components/ui/step-progress';
 import { ResponsiveContainer } from '@/components/common/ResponsiveContainer';
 import { useEstimateStore } from '@/stores/useEstimateStore';
 import { useSaveEstimate } from '@/hooks/useEstimateAPI';
+import type { EstimateSaveRequest } from '@/types/api';
 import { 
   estimateSchema, 
   vehicleInfoSchema, 
@@ -64,7 +65,11 @@ export function EnhancedEstimateForm() {
     mode: 'onChange',
     defaultValues: {
       vehicle: vehicleInfo || { category: '', customModel: '' },
-      transport: transportInfo || { 
+      transport: transportInfo ? {
+        departureAddress: transportInfo.departureAddress || '',
+        arrivalAddress: transportInfo.arrivalAddress || '',
+        transportDate: transportInfo.transportDate || undefined
+      } : { 
         departureAddress: '', 
         arrivalAddress: '', 
         transportDate: undefined 
@@ -194,10 +199,24 @@ export function EnhancedEstimateForm() {
         specialRequests: customerInfo.specialRequests || undefined,
       };
 
-      const result = await saveEstimateMutation.mutateAsync(submitData);
+      const saveData: EstimateSaveRequest = {
+        companyKey: 'JEJULOGIS',
+        departure: submitData.departureAddress,
+        arrival: submitData.arrivalAddress,
+        carName: submitData.vehicleModel,
+        transportDate: submitData.transportDate,
+        cost: 0, // 실제 견적 금액은 서버에서 계산됨
+        customerName: submitData.customerName,
+        customerPhone: submitData.customerPhone,
+        customerEmail: submitData.customerEmail,
+        memo: submitData.specialRequests,
+        status: 0 // 기본값
+      };
+
+      const result = await saveEstimateMutation.mutateAsync(saveData);
       
       // 성공 시 결과 페이지로 이동
-      window.location.href = `/estimate/result?id=${result.id}`;
+      window.location.href = `/estimate/result?id=${result.data.id}`;
       
     } catch (error) {
       console.error('견적 제출 실패:', error);
@@ -366,7 +385,7 @@ export function EnhancedEstimateForm() {
                     render={({ field }) => (
                       <DatePicker
                         label="희망 운송일 *"
-                        date={field.value}
+                        date={field.value || undefined}
                         onDateChange={field.onChange}
                         minDate={new Date()}
                         placeholder="운송 희망일을 선택하세요"

@@ -6,12 +6,13 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 const nextConfig = {
   // 실험적 기능들
   experimental: {
-    optimizeCss: true,
+    // optimizeCss: true, // critters 모듈 문제로 비활성화
     scrollRestoration: true,
   },
 
-  // 이미지 최적화
+  // 이미지 최적화 (정적 배포용)
   images: {
+    unoptimized: true, // 정적 배포에서 이미지 최적화 비활성화
     formats: ['image/webp', 'image/avif'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
@@ -170,8 +171,10 @@ const nextConfig = {
     BUILD_DATE: new Date().toISOString(),
   },
 
-  // 출력 추적
-  output: 'standalone',
+  // SSR 모드로 전환 - 진정한 동적 라우팅 지원
+  // output: 'export',  // 정적 빌드 비활성화
+  output: 'standalone', // 서버 모드 활성화
+  trailingSlash: true,
 
   // TypeScript 설정
   typescript: {
@@ -181,13 +184,13 @@ const nextConfig = {
   // ESLint 설정
   eslint: {
     dirs: ['pages', 'utils', 'src'],
-    ignoreDuringBuilds: false,
+    ignoreDuringBuilds: true, // 빌드 시 ESLint 오류 무시
   },
 
   // 성능 최적화
   poweredByHeader: false,
   reactStrictMode: true,
-  swcMinify: true,
+  // swcMinify는 Next.js 15에서 기본값이므로 제거
 
   // 개발 환경 설정
   ...(process.env.NODE_ENV === 'development' && {

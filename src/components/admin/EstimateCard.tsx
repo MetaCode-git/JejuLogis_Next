@@ -49,13 +49,23 @@ export function EstimateCard({ estimate, onEdit, onView, className }: EstimateCa
     }
   }, [estimate.id, updateEstimateStatus, isUpdating]);
 
+  const handleViewClick = useCallback(() => {
+    // SSR 모드에서는 동적 라우팅 지원
+    if (onView) {
+      onView(estimate);
+    } else {
+      // Navigate to dynamic route - SSR 모드에서 정상 작동
+      window.location.href = `/admin/estimates/${estimate.id}`;
+    }
+  }, [estimate, onView]);
+
   const handleEdit = useCallback(() => {
     onEdit?.(estimate);
   }, [estimate, onEdit]);
 
   const handleView = useCallback(() => {
-    onView?.(estimate);
-  }, [estimate, onView]);
+    handleViewClick();
+  }, [handleViewClick]);
 
   const getStatusBadgeColor = (status: number) => {
     switch (status) {
@@ -112,7 +122,7 @@ export function EstimateCard({ estimate, onEdit, onView, className }: EstimateCa
                 접수번호: {estimate.id}
               </h3>
               <Badge className={`${getStatusBadgeColor(estimate.status)} border`}>
-                {ESTIMATE_STATUS_LABELS[estimate.status] || '알 수 없음'}
+                {ESTIMATE_STATUS_LABELS[estimate.status as keyof typeof ESTIMATE_STATUS_LABELS] || '알 수 없음'}
               </Badge>
               <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
                 <Building2 className="h-3 w-3 mr-1" />
@@ -290,7 +300,7 @@ export function EstimateCard({ estimate, onEdit, onView, className }: EstimateCa
                       : 'hover:bg-gray-50'
                   }`}
                 >
-                  {ESTIMATE_STATUS_LABELS[status]}
+                  {ESTIMATE_STATUS_LABELS[status as keyof typeof ESTIMATE_STATUS_LABELS]}
                 </Button>
               ))}
             </div>

@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, RefObject } from 'react';
+import React, { useEffect, useState, useRef, RefObject } from 'react';
 import { useUIStore } from '@/stores/useUIStore';
 
 // 포커스 관리 훅

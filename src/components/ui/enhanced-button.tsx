@@ -4,7 +4,8 @@ import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { cn } from '@/lib/theme';
 import { LucideIcon } from 'lucide-react';
 
-interface EnhancedButtonProps extends ButtonProps {
+interface EnhancedButtonProps extends Omit<ButtonProps, 'asChild'> {
+  children?: React.ReactNode;
   loading?: boolean;
   loadingText?: string;
   icon?: LucideIcon;
@@ -12,6 +13,7 @@ interface EnhancedButtonProps extends ButtonProps {
   fullWidth?: boolean;
   gradient?: boolean;
   pulse?: boolean;
+  asChild?: boolean;
 }
 
 const EnhancedButton = React.forwardRef<HTMLButtonElement, EnhancedButtonProps>(
@@ -44,11 +46,7 @@ const EnhancedButton = React.forwardRef<HTMLButtonElement, EnhancedButtonProps>(
           fullWidth && 'w-full',
           
           // 그라데이션 효과
-          gradient && variant === 'default' && [
-            'bg-gradient-to-r from-red-500 to-red-600',
-            'hover:from-red-600 hover:to-red-700',
-            'text-white border-0'
-          ],
+          gradient && variant === 'default' && 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-0',
           
           // 펄스 애니메이션
           pulse && 'animate-pulse',

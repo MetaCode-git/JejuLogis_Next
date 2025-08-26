@@ -1,4 +1,5 @@
 // 성능 측정 유틸리티
+import React from 'react';
 
 export interface PerformanceMetrics {
   lcp?: number; // Largest Contentful Paint
@@ -20,8 +21,8 @@ export function measureWebVitals(metric: any) {
   // 프로덕션에서 분석 서비스로 전송
   if (process.env.NODE_ENV === 'production') {
     // Google Analytics 4
-    if (typeof gtag !== 'undefined') {
-      gtag('event', name, {
+    if (typeof window !== 'undefined' && 'gtag' in window) {
+      (window as any).gtag('event', name, {
         custom_parameter_1: value,
         custom_parameter_2: id,
       });
@@ -209,7 +210,7 @@ export function measurePageLoad() {
         response: navigation.responseEnd - navigation.responseStart,
         dom: navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart,
         load: navigation.loadEventEnd - navigation.loadEventStart,
-        total: navigation.loadEventEnd - navigation.navigationStart,
+        total: navigation.loadEventEnd - navigation.fetchStart,
       };
 
       if (process.env.NODE_ENV === 'development') {

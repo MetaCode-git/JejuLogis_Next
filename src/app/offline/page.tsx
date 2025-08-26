@@ -1,14 +1,10 @@
-import { Metadata } from 'next';
+'use client';
+
 import { Header } from '@/components/common/Header';
 import { Footer } from '@/components/common/Footer';
 import { EnhancedButton } from '@/components/ui/enhanced-button';
 import { ResponsiveContainer } from '@/components/common/ResponsiveContainer';
 import { WifiOff, RefreshCw, Phone, Home } from 'lucide-react';
-
-export const metadata: Metadata = {
-  title: '오프라인 - 제주탁송',
-  description: '현재 인터넷에 연결되어 있지 않습니다.',
-};
 
 export default function OfflinePage() {
   return (

@@ -18,12 +18,26 @@ interface AddressResult {
   buildingName?: string;
 }
 
-// Next.js API Route를 통한 실제 주소 검색 함수
+// 클라이언트에서 직접 JUSO API 호출하는 주소 검색 함수
 const searchKoreanAddress = async (query: string): Promise<AddressResult[]> => {
   if (!query.trim()) return [];
   
   try {
-    const response = await fetch(`/api/address-search?query=${encodeURIComponent(query)}`);
+    const API_KEY = process.env.NEXT_PUBLIC_JUSO_API_KEY;
+    if (!API_KEY) {
+      console.error('JUSO API 키가 설정되지 않았습니다');
+      return [];
+    }
+
+    // JUSO API 직접 호출 (CORS 허용됨)
+    const response = await fetch(
+      `https://www.juso.go.kr/addrlink/addrLinkApi.do?confmKey=${API_KEY}&currentPage=1&countPerPage=10&keyword=${encodeURIComponent(query)}&resultType=json`,
+      {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; JejuLogis/1.0)'
+        }
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`API 호출 실패: ${response.status}`);
@@ -31,12 +45,20 @@ const searchKoreanAddress = async (query: string): Promise<AddressResult[]> => {
 
     const data = await response.json();
     
-    if (data.error) {
-      console.error('주소 검색 API 에러:', data.error);
+    if (data.results?.common?.errorCode !== '0') {
+      console.error('JUSO API 에러:', data.results?.common?.errorMessage);
       return [];
     }
 
-    return data.results || [];
+    const jusoList = data.results?.juso || [];
+    
+    return jusoList.map((juso: any) => ({
+      address: juso.roadAddr || juso.jibunAddr,
+      roadAddress: juso.roadAddr,
+      jibunAddress: juso.jibunAddr,
+      zonecode: juso.zipNo,
+      buildingName: juso.bdNm || ''
+    }));
     
   } catch (error) {
     console.error('주소 검색 API 에러:', error);
@@ -210,8 +232,8 @@ export function EstimateBottomSheet({ isOpen, onClose }: EstimateBottomSheetProp
   const [isSearchingAddress, setIsSearchingAddress] = useState(false);
 
   // Debounce refs
-  const vehicleTimeoutRef = useRef<NodeJS.Timeout>();
-  const addressTimeoutRef = useRef<NodeJS.Timeout>();
+  const vehicleTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const addressTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   // 입력 필드 ref들 (Portal 위치 계산용)
   const vehicleInputRef = useRef<HTMLDivElement>(null);
@@ -614,12 +636,12 @@ export function EstimateBottomSheet({ isOpen, onClose }: EstimateBottomSheetProp
                   
                   // 차량 설정 (임시 객체 생성)
                   setSelectedVehicle({
-                    id: '999',
+                    id: 999,
                     name: randomVehicle,
                     maker: '',
                     type: 'test',
                     priceNormal: 0,
-                    priceExpress: 0
+                    priceExtra: 0
                   });
                   setVehicleQuery(randomVehicle);
                   

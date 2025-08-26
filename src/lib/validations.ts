@@ -24,10 +24,12 @@ export const transportInfoSchema = z.object({
     .max(200, '주소가 너무 깁니다'),
   transportDate: z
     .date({
-      required_error: '운송 희망일을 선택해주세요',
-      invalid_type_error: '올바른 날짜를 선택해주세요',
+      message: '운송 희망일을 선택해주세요'
     })
-    .min(new Date(), '운송일은 오늘 이후로 선택해주세요'),
+    .nullable()
+    .refine((date) => date !== null && date >= new Date(), {
+      message: '운송일은 오늘 이후로 선택해주세요'
+    }),
 });
 
 // 고객 정보 스키마
