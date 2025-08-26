@@ -14,7 +14,15 @@
       "mcp__ide__getDiagnostics",
       "Bash(grep:*)",
       "Bash(curl:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(git add:*)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_type",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_wait_for",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_press_key",
+      "Bash(cat:*)"
     ],
     "deny": []
   }

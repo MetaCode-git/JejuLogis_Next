@@ -34,7 +34,6 @@ const EnhancedInput = forwardRef<HTMLInputElement, EnhancedInputProps>(
     ...props
   }, ref) => {
     const [showPassword, setShowPassword] = useState(false);
-    const [internalValue, setInternalValue] = useState(value || '');
 
     const inputType = type === 'password' && showPassword ? 'text' : type;
     const hasError = Boolean(error);
@@ -59,10 +58,10 @@ const EnhancedInput = forwardRef<HTMLInputElement, EnhancedInputProps>(
           newValue = `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
         }
         
+        // 포맷된 값을 이벤트에 반영
         e.target.value = newValue;
       }
 
-      setInternalValue(newValue);
       onChange?.(e);
     };
 
@@ -86,7 +85,7 @@ const EnhancedInput = forwardRef<HTMLInputElement, EnhancedInputProps>(
           <Input
             ref={ref}
             type={inputType}
-            value={internalValue}
+            value={value}
             onChange={handleChange}
             className={cn(
               // 기본 스타일

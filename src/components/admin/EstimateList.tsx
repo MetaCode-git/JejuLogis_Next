@@ -45,21 +45,35 @@ export function EstimateList({ onEstimateEdit, onEstimateView, className }: Esti
   const [sortField, setSortField] = useState<SortField>('createdAt');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
+  const getCompanyName = (companyKey: string) => {
+    const companyMap: Record<string, string> = {
+      'JEJULOGIS': '제주탁송',
+      'ADMIN': '관리자',
+      'SCLOGIS': 'SC로지스',
+      'jejuNhalla': '제주앤할라',
+      'nationwide': '전국택배',
+      'UPDATED_COMPANY': '업데이트된회사',
+    };
+    return companyMap[companyKey] || companyKey;
+  };
+
   // Filtered and sorted estimates
   const processedEstimates = useMemo(() => {
     let filtered = filteredEstimates;
 
     // Apply search filter
-    if (searchTerm.trim()) {
+    if (searchTerm && searchTerm.trim()) {
       const term = searchTerm.toLowerCase().trim();
       filtered = filtered.filter((estimate) =>
         estimate.id.toString().includes(term) ||
-        estimate.customerName.toLowerCase().includes(term) ||
-        estimate.carName.toLowerCase().includes(term) ||
-        estimate.carNumber?.toLowerCase().includes(term) ||
-        estimate.departure.toLowerCase().includes(term) ||
-        estimate.arrival.toLowerCase().includes(term) ||
-        estimate.customerPhone.includes(term)
+        (estimate.customerName && estimate.customerName.toLowerCase().includes(term)) ||
+        (estimate.carName && estimate.carName.toLowerCase().includes(term)) ||
+        (estimate.carNumber && estimate.carNumber.toLowerCase().includes(term)) ||
+        (estimate.departure && estimate.departure.toLowerCase().includes(term)) ||
+        (estimate.arrival && estimate.arrival.toLowerCase().includes(term)) ||
+        (estimate.customerPhone && estimate.customerPhone.includes(term)) ||
+        (estimate.companyKey && estimate.companyKey.toLowerCase().includes(term)) ||
+        getCompanyName(estimate.companyKey).toLowerCase().includes(term)
       );
     }
 
@@ -214,9 +228,9 @@ export function EstimateList({ onEstimateEdit, onEstimateView, className }: Esti
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <EnhancedInput
                     type="text"
-                    placeholder="접수번호, 고객명, 차량명, 연락처로 검색..."
+                    placeholder="접수번호, 고객명, 차량명, 연락처, 회사명으로 검색..."
                     value={searchTerm}
-                    onChange={setSearchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10"
                   />
                 </div>

@@ -21,7 +21,8 @@ import {
   ChevronDown,
   ChevronUp,
   Mail,
-  MessageSquare
+  MessageSquare,
+  Building2
 } from 'lucide-react';
 
 interface EstimateCardProps {
@@ -88,6 +89,18 @@ export function EstimateCard({ estimate, onEdit, onView, className }: EstimateCa
     return new Intl.NumberFormat('ko-KR').format(amount) + '원';
   };
 
+  const getCompanyName = (companyKey: string) => {
+    const companyMap: Record<string, string> = {
+      'JEJULOGIS': '제주탁송',
+      'ADMIN': '관리자',
+      'SCLOGIS': 'SC로지스',
+      'jejuNhalla': '제주앤할라',
+      'nationwide': '전국택배',
+      'UPDATED_COMPANY': '업데이트된회사',
+    };
+    return companyMap[companyKey] || companyKey;
+  };
+
   return (
     <Card className={`transition-all duration-200 hover:shadow-lg ${className || ''}`}>
       <CardContent className="p-6">
@@ -101,13 +114,25 @@ export function EstimateCard({ estimate, onEdit, onView, className }: EstimateCa
               <Badge className={`${getStatusBadgeColor(estimate.status)} border`}>
                 {ESTIMATE_STATUS_LABELS[estimate.status] || '알 수 없음'}
               </Badge>
+              <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+                <Building2 className="h-3 w-3 mr-1" />
+                {getCompanyName(estimate.companyKey)}
+              </Badge>
             </div>
             
             <div className="flex items-center text-sm text-gray-600 space-x-4">
               <div className="flex items-center space-x-1">
                 <Clock className="h-4 w-4" />
-                <span>접수: {formatDateTime(estimate.createdAt)}</span>
+                <span>접수일시: {formatDateTime(estimate.createdAt)}</span>
               </div>
+              {estimate.updatedAt !== estimate.createdAt && (
+                <div className="flex items-center space-x-1">
+                  <Clock className="h-4 w-4 text-orange-500" />
+                  <span className="text-orange-600">
+                    최종수정: {formatDateTime(estimate.updatedAt)}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -217,14 +242,21 @@ export function EstimateCard({ estimate, onEdit, onView, className }: EstimateCa
 
               <div className="space-y-2">
                 <div className="flex items-start space-x-2">
-                  <span className="font-medium text-gray-900">회사키:</span>
-                  <span className="text-gray-700">{estimate.companyKey}</span>
+                  <Building2 className="h-4 w-4 text-gray-500 mt-0.5" />
+                  <span className="font-medium text-gray-900">담당회사:</span>
+                  <div className="flex flex-col">
+                    <span className="text-gray-700">{getCompanyName(estimate.companyKey)}</span>
+                    <span className="text-xs text-gray-500">({estimate.companyKey})</span>
+                  </div>
                 </div>
                 
-                <div className="flex items-start space-x-2">
-                  <span className="font-medium text-gray-900">수정일:</span>
-                  <span className="text-gray-700">{formatDateTime(estimate.updatedAt)}</span>
-                </div>
+                {estimate.updatedAt !== estimate.createdAt && (
+                  <div className="flex items-start space-x-2">
+                    <Clock className="h-4 w-4 text-orange-500 mt-0.5" />
+                    <span className="font-medium text-gray-900">최종수정일시:</span>
+                    <span className="text-orange-600">{formatDateTime(estimate.updatedAt)}</span>
+                  </div>
+                )}
               </div>
             </div>
 

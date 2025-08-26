@@ -112,6 +112,16 @@ const nextConfig = {
     ];
   },
 
+  // API 프록시 설정 - CORS 문제 해결
+  async rewrites() {
+    return [
+      {
+        source: '/api/proxy/:path*',
+        destination: 'https://jejulogis.kro.kr/api/v0/:path*',
+      },
+    ];
+  },
+
   // 웹팩 설정 최적화
   webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
     // 프로덕션 빌드 최적화

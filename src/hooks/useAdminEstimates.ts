@@ -12,7 +12,8 @@ import {
   ESTIMATE_STATUS,
 } from '@/types/admin';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://jejulogis.kro.kr';
+// Use Next.js API proxy to avoid CORS issues
+const ADMIN_API_BASE = '/api/proxy';
 
 export const useAdminEstimates = () => {
   const queryClient = useQueryClient();
@@ -22,12 +23,12 @@ export const useAdminEstimates = () => {
   const estimatesQuery = useQuery<AdminEstimate[], AdminApiError>({
     queryKey: ['admin-estimates', user?.id, getCompanyKey()],
     queryFn: async () => {
-      if (!canManageEstimates()) {
+      if (!canManageEstimates() || !user) {
         throw new Error('권한이 없습니다.');
       }
 
       const companyKey = getCompanyKey();
-      let url = `${API_BASE_URL}/api/v0/estimates`;
+      let url = `${ADMIN_API_BASE}/estimates`;
       
       // Add company filter for regular admins
       if (companyKey) {
@@ -48,7 +49,7 @@ export const useAdminEstimates = () => {
       }
 
       const data: AdminApiResponse<AdminEstimate[]> = await response.json();
-      return data.data;
+      return data.data || [];
     },
     enabled: canManageEstimates() && !!user,
     refetchInterval: 30000, // Refetch every 30 seconds
@@ -73,7 +74,7 @@ export const useAdminEstimates = () => {
         }
 
         const response = await fetch(
-          `${API_BASE_URL}/api/v0/estimates/status/${status}`,
+          `${ADMIN_API_BASE}/estimates/status/${status}`,
           {
             method: 'GET',
             headers: {
@@ -89,7 +90,7 @@ export const useAdminEstimates = () => {
         }
 
         const data: AdminApiResponse<AdminEstimate[]> = await response.json();
-        return data.data;
+        return data.data || [];
       },
       enabled: canManageEstimates() && !!user,
     });
@@ -100,12 +101,12 @@ export const useAdminEstimates = () => {
     return useQuery<AdminEstimate, AdminApiError>({
       queryKey: ['admin-estimate', estimateId],
       queryFn: async () => {
-        if (!canManageEstimates()) {
+        if (!canManageEstimates() || !user) {
           throw new Error('권한이 없습니다.');
         }
 
         const response = await fetch(
-          `${API_BASE_URL}/api/v0/estimates/${estimateId}`,
+          `${ADMIN_API_BASE}/estimates/${estimateId}`,
           {
             method: 'GET',
             headers: {
@@ -117,7 +118,7 @@ export const useAdminEstimates = () => {
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.message || `HTTP ${response.status}: 견적 정보를 가져올 수 없습니다.`);
+          throw new Error(errorData.message || `HTTP ${response.status}: 견적을 찾을 수 없습니다.`);
         }
 
         const data: AdminApiResponse<AdminEstimate> = await response.json();
@@ -139,7 +140,7 @@ export const useAdminEstimates = () => {
       }
 
       const response = await fetch(
-        `${API_BASE_URL}/api/v0/estimates/${estimateId}`,
+        `${ADMIN_API_BASE}/estimates/${estimateId}`,
         {
           method: 'POST', // API uses POST for updates
           headers: {
@@ -159,7 +160,7 @@ export const useAdminEstimates = () => {
       
       // Return the updated estimate (refetch it)
       const updatedResponse = await fetch(
-        `${API_BASE_URL}/api/v0/estimates/${estimateId}`,
+        `${ADMIN_API_BASE}/estimates/${estimateId}`,
         {
           method: 'GET',
           headers: {
@@ -181,6 +182,11 @@ export const useAdminEstimates = () => {
 
   // Update estimate status
   const updateEstimateStatus = useCallback(async (estimateId: number, status: number) => {
+    if (!user) {
+      console.error('No user available for status update');
+      return false;
+    }
+
     try {
       await updateEstimateMutation.mutateAsync({
         estimateId,
@@ -188,10 +194,10 @@ export const useAdminEstimates = () => {
       });
       return true;
     } catch (error) {
-      console.error('Failed to update estimate status:', error);
+      console.error('Status update failed:', error);
       return false;
     }
-  }, [updateEstimateMutation]);
+  }, [updateEstimateMutation, user]);
 
   // Refresh estimates
   const refreshEstimates = useCallback(() => {

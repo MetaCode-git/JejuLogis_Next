@@ -47,16 +47,14 @@ export default function AdminPage() {
   }, [logout]);
 
   const handleEstimateEdit = useCallback((estimate: AdminEstimate) => {
-    // TODO: Implement estimate edit modal or navigate to edit page
-    console.log('Edit estimate:', estimate);
-    alert(`견적 수정 기능 (ID: ${estimate.id})`);
-  }, []);
+    // Navigate to estimate detail page in edit mode
+    router.push(`/admin/estimates/${estimate.id}?mode=edit`);
+  }, [router]);
 
   const handleEstimateView = useCallback((estimate: AdminEstimate) => {
-    // TODO: Implement estimate detail modal or navigate to detail page
-    console.log('View estimate:', estimate);
-    alert(`견적 상세 보기 (ID: ${estimate.id})`);
-  }, []);
+    // Navigate to estimate detail page
+    router.push(`/admin/estimates/${estimate.id}`);
+  }, [router]);
 
   // Show loading while initializing
   if (!isInitialized) {
